@@ -12,6 +12,7 @@ service AuthService {
     rpc Register (RegisterRequest) returns (RegisterResponse);
     rpc RefreshToken (RefreshTokenRequest) returns (RefreshTokenResponse);
     rpc ValidateToken (ValidateTokenRequest) returns (ValidateTokenResponse);
+    rpc CheckPhoneExists (CheckPhoneExistsRequest) returns (CheckPhoneExistsResponse);
 }
 
 // Login request and response
@@ -61,4 +62,13 @@ message ValidateTokenRequest {
 message ValidateTokenResponse {
     bool is_valid = 1;
     string user_id = 2;
+}
+
+// Check phone exists request and response
+message CheckPhoneExistsRequest {
+    string phone = 1;
+}
+
+message CheckPhoneExistsResponse {
+    bool exists = 1;
 }
