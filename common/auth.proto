@@ -8,6 +8,7 @@ option go_package = "authpb/";
 // Auth service
 service AuthService {
     rpc Login (LoginRequest) returns (LoginResponse);
+    rpc LoginByPhone (LoginByPhoneRequest) returns (LoginResponse);
     rpc Register (RegisterRequest) returns (RegisterResponse);
     rpc RefreshToken (RefreshTokenRequest) returns (RefreshTokenResponse);
     rpc ValidateToken (ValidateTokenRequest) returns (ValidateTokenResponse);
@@ -23,6 +24,11 @@ message LoginResponse {
     string access_token = 1;
     string refresh_token = 2;
     int32 expires_in = 3;
+}
+
+// Login by Phone request
+message LoginByPhoneRequest {
+    string phone = 1;
 }
 
 // Register request and response
