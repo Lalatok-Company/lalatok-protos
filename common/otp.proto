@@ -3,8 +3,6 @@ syntax = "proto3";
 package otp;
 
 // This is the Go package name
-import "google/protobuf/timestamp.proto";
-
 option go_package = "otppb/";
 
 // OTP service
