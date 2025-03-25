@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package profile;
+package otp;
 
 // This is the Go package name
 import "google/protobuf/timestamp.proto";
