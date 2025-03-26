@@ -2,20 +2,16 @@ syntax = "proto3";
 
 package profile;
 
-import "google/protobuf/timestamp.proto";
-
+// This is the Go package name
 option go_package = "profilepb/";
 
 message Profile {
   string id = 1;
   string account_id = 2;
   string username = 3;
-  string avatar_url = 4;
   string gender = 5;
   string birth_day = 6;
   string mood = 7;
-  google.protobuf.Timestamp created_at = 8;
-  google.protobuf.Timestamp updated_at = 9;
 }
 
 service ProfileService {
@@ -69,7 +65,6 @@ message ListByAccountsResponse {
 message UpdateRequest {
   string id = 1;
   string username = 2;
-  string avatar_url = 3;
   string gender = 4;
   string birth_day = 5;
   string mood = 6;
