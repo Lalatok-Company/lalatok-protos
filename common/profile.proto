@@ -22,6 +22,7 @@ service ProfileService {
   rpc ListByAccounts(ListByAccountsRequest) returns (ListByAccountsResponse);
   rpc Update(UpdateRequest) returns (Profile);
   rpc Delete(DeleteRequest) returns (DeleteResponse);
+  rpc CheckUsername(CheckUsernameRequest) returns (CheckUsernameResponse);
 }
 
 message CreateRequest {
@@ -74,4 +75,12 @@ message DeleteRequest {
 
 message DeleteResponse {
   bool success = 1;
+}
+
+message CheckUsernameRequest {
+  string username = 1;
+}
+
+message CheckUsernameResponse {
+  bool exists = 1;
 }
