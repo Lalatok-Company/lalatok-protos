@@ -39,7 +39,7 @@ message IsFollowRequest {
 }
 
 message IsFollowResponse {
-  bool is_following = 1;
+  bool is_follow = 1;
 }
 
 message GetFollowersRequest {
