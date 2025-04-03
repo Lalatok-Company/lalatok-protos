@@ -23,6 +23,7 @@ service ProfileService {
   rpc Update(UpdateRequest) returns (Profile);
   rpc Delete(DeleteRequest) returns (DeleteResponse);
   rpc CheckUsername(CheckUsernameRequest) returns (CheckUsernameResponse);
+  rpc GetListExcludedAccountID(GetListExcludedAccountIDRequest) returns (GetListExcludedAccountIDResponse);
 }
 
 message CreateRequest {
@@ -83,4 +84,14 @@ message CheckUsernameRequest {
 
 message CheckUsernameResponse {
   bool exists = 1;
+}
+
+message GetListExcludedAccountIDRequest {
+  string account_id = 1;
+  int32 limit = 2;
+  int32 offset = 3;
+}
+
+message GetListExcludedAccountIDResponse {
+  repeated Profile profiles = 1;
 }
