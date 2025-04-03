@@ -24,6 +24,7 @@ service ProfileService {
   rpc Delete(DeleteRequest) returns (DeleteResponse);
   rpc CheckUsername(CheckUsernameRequest) returns (CheckUsernameResponse);
   rpc GetListExcludedAccountID(GetListExcludedAccountIDRequest) returns (GetListExcludedAccountIDResponse);
+  rpc SearchByUsername(SearchByUsernameRequest) returns (SearchByUsernameResponse);
 }
 
 message CreateRequest {
@@ -93,5 +94,15 @@ message GetListExcludedAccountIDRequest {
 }
 
 message GetListExcludedAccountIDResponse {
+  repeated Profile profiles = 1;
+}
+
+message SearchByUsernameRequest {
+  string username = 1;
+  int32 limit = 2;
+  int32 offset = 3;
+}
+
+message SearchByUsernameResponse {
   repeated Profile profiles = 1;
 }
