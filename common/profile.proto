@@ -25,6 +25,7 @@ service ProfileService {
   rpc CheckUsername(CheckUsernameRequest) returns (CheckUsernameResponse);
   rpc GetListExcludedAccountID(GetListExcludedAccountIDRequest) returns (GetListExcludedAccountIDResponse);
   rpc SearchByUsername(SearchByUsernameRequest) returns (SearchByUsernameResponse);
+  rpc GetProfilesByAccountID(GetProfilesByAccountIDRequest) returns (GetProfilesByAccountIDResponse);
 }
 
 message CreateRequest {
@@ -104,5 +105,13 @@ message SearchByUsernameRequest {
 }
 
 message SearchByUsernameResponse {
+  repeated Profile profiles = 1;
+}
+
+message GetProfilesByAccountIDRequest {
+  repeated string account_ids = 1;
+}
+
+message GetProfilesByAccountIDResponse {
   repeated Profile profiles = 1;
 }
