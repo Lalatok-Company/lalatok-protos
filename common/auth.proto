@@ -5,6 +5,12 @@ package auth;
 // This is the Go package name
 option go_package = "authpb/";
 
+
+message Account {
+  string id = 1;
+  string phone = 2;
+}
+
 // Auth service
 service AuthService {
     rpc Login (LoginRequest) returns (LoginResponse);
@@ -13,6 +19,7 @@ service AuthService {
     rpc RefreshToken (RefreshTokenRequest) returns (RefreshTokenResponse);
     rpc ValidateToken (ValidateTokenRequest) returns (ValidateTokenResponse);
     rpc CheckPhoneExists (CheckPhoneExistsRequest) returns (CheckPhoneExistsResponse);
+    rpc GetAccountsByPhone (GetAccountsByPhoneRequest) returns (GetAccountsByPhoneResponse);
 }
 
 // Login request and response
@@ -71,4 +78,13 @@ message CheckPhoneExistsRequest {
 
 message CheckPhoneExistsResponse {
     bool exists = 1;
+}
+
+// Get user by phone numbers request and response
+message GetAccountsByPhoneRequest {
+    repeated string phone_numbers = 1;
+}
+
+message GetAccountsByPhoneResponse {
+    repeated Account accounts = 1;
 }
