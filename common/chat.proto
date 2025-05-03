@@ -1,0 +1,280 @@
+syntax = "proto3";
+
+package chat;
+
+option go_package = "chatpb/";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
+
+// ChatService defines all chat-related operations
+service ChatService {
+  // Chat Room Management
+  rpc CreateChatRoom(CreateChatRoomRequest) returns (CreateChatRoomResponse) {}
+  rpc GetChatRoom(GetChatRoomRequest) returns (GetChatRoomResponse) {}
+  rpc SearchChatRooms(SearchChatRoomsRequest) returns (SearchChatRoomsResponse) {}
+  rpc GetChatRoomsByAccountID(GetChatRoomsByAccountIDRequest) returns (GetChatRoomsByAccountIDResponse) {}
+  rpc LeaveChat(LeaveChatRequest) returns (google.protobuf.Empty) {}
+  rpc DeleteChatRoom(DeleteChatRoomRequest) returns (google.protobuf.Empty) {}
+  rpc DeleteAllChatRooms(DeleteAllChatRoomsRequest) returns (google.protobuf.Empty) {}
+  rpc MuteChat(MuteChatRequest) returns (google.protobuf.Empty) {}
+  rpc UnmuteChat(UnmuteChatRequest) returns (google.protobuf.Empty) {}
+  rpc ChangeBackground(ChangeBackgroundRequest) returns (google.protobuf.Empty) {}
+
+  // Message Management
+  rpc SendMessage(SendMessageRequest) returns (SendMessageResponse) {}
+  rpc GetMessages(GetMessagesRequest) returns (GetMessagesResponse) {}
+  rpc LikeMessage(LikeMessageRequest) returns (google.protobuf.Empty) {}
+  rpc UnlikeMessage(UnlikeMessageRequest) returns (google.protobuf.Empty) {}
+
+  // Chat Request Management
+  rpc AcceptChatRequest(AcceptChatRequestRequest) returns (google.protobuf.Empty) {}
+  rpc DeclineChatRequest(DeclineChatRequestRequest) returns (google.protobuf.Empty) {}
+  rpc GetChatRequests(GetChatRequestsRequest) returns (GetChatRequestsResponse) {}
+  rpc DeleteChatRequest(DeleteChatRequestRequest) returns (google.protobuf.Empty) {}
+
+  // User Messages Management
+  rpc GetMessagesByAccountID(GetMessagesByAccountIDRequest) returns (GetMessagesByAccountIDResponse) {}
+}
+
+// Search Request
+message SearchChatRoomsRequest {
+  string account_id = 1;
+  string search_query = 2;  // Can be username or chat room name
+  int32 limit = 3;
+  string next_page_token = 4; // base64-encoded Cassandra paging state
+}
+
+message SearchChatRoomsResponse {
+  repeated ChatRoom chat_rooms = 1;
+  string next_page_token = 2; // base64-encoded Cassandra paging state for next page, empty if no more
+}
+
+// Chat Room Messages
+message CreateChatRoomRequest {
+  string creator_account_id = 1;
+  repeated string participants = 2;
+  string name = 3;           // Optional for group chats
+  string description = 4;    // Optional
+  string initial_message = 5; // Optional first message
+}
+
+message CreateChatRoomResponse {
+  ChatRoom chat_room = 1;
+}
+
+message GetChatRoomRequest {
+  string account_id = 1;
+  string chat_room_id = 2;
+}
+
+message GetChatRoomResponse {
+  ChatRoom chat_room = 1;
+}
+
+message GetChatRoomsByAccountIDRequest {
+  string account_id = 1;
+  int32 limit = 2;
+  string next_page_token = 3; // base64-encoded Cassandra paging state
+}
+
+message GetChatRoomsByAccountIDResponse {
+  repeated ChatRoom chat_rooms = 1;
+  string next_page_token = 2; // base64-encoded Cassandra paging state for next page, empty if no more
+}
+
+message LeaveChatRequest {
+  string chat_room_id = 1;
+  string account_id = 2;
+}
+
+message DeleteChatRoomRequest {
+  string chat_room_id = 1;
+  string account_id = 2;
+}
+
+message DeleteAllChatRoomsRequest {
+  string account_id = 1;
+  bool include_archived = 2;
+}
+
+message MuteChatRequest {
+  string chat_room_id = 1;
+  string account_id = 2;
+  google.protobuf.Timestamp mute_until = 3;  // Optional, if not set mute indefinitely
+}
+
+message UnmuteChatRequest {
+  string chat_room_id = 1;
+  string account_id = 2;
+}
+
+message ChangeBackgroundRequest {
+  string chat_room_id = 1;
+  string account_id = 2;
+  string background_url = 3;
+}
+
+// Message Messages
+message SendMessageRequest {
+  string chat_room_id = 1;
+  string sender_account_id = 2;
+  string receiver_account_id = 3;  // Optional, for private messages
+  string content = 4;
+  string message_type = 5;
+  map<string, string> metadata = 6;  // For additional data like location coordinates, file info
+  string reply_to_message_id = 7;    // Optional, for reply messages
+}
+
+message SendMessageResponse {
+  Message message = 1;
+}
+
+message GetMessagesRequest {
+  string chat_room_id = 1;
+  string account_id = 2;
+  int32 limit = 3;
+  string next_page_token = 4; // base64-encoded Cassandra paging state
+  google.protobuf.Timestamp before = 5;  // Optional, for pagination
+  repeated string message_types = 6; // Optional, filter by message types
+}
+
+message GetMessagesResponse {
+  repeated Message messages = 1;
+  string next_page_token = 2; // base64-encoded Cassandra paging state for next page, empty if no more
+  bool has_more = 3;
+}
+
+message LikeMessageRequest {
+  string message_id = 1;
+  string account_id = 2;
+}
+
+message UnlikeMessageRequest {
+  string message_id = 1;
+  string account_id = 2;
+}
+
+message AcceptChatRequestRequest {
+  string request_id = 1;
+  string account_id = 2;
+}
+
+message DeclineChatRequestRequest {
+  string request_id = 1;
+  string account_id = 2;
+}
+
+message BlockChatRequestRequest {
+  string request_id = 1;
+  string account_id = 2;
+}
+
+message GetChatRequestsRequest {
+  string account_id = 1;
+  string status = 2;  // Optional, filter by status
+  int32 limit = 3;
+  string next_page_token = 4; // base64-encoded Cassandra paging state
+}
+
+message GetChatRequestsResponse {
+  repeated ChatRequest requests = 1;
+  string next_page_token = 2; // base64-encoded Cassandra paging state for next page, empty if no more
+}
+
+message DeleteChatRequestRequest {
+  string request_id = 1;
+  string account_id = 2;
+}
+
+message MessageStatus {
+  string message_id = 1;
+  string status = 2;  // delivered, read, failed
+  repeated string read_by = 3;
+  repeated string delivered_to = 4;
+}
+
+message ChatRoomUpdate {
+  string chat_room_id = 1;
+  string update_type = 2;  // member_joined, member_left, background_changed, etc.
+  map<string, string> metadata = 3;
+}
+
+message UserPresence {
+  string account_id = 1;
+  string status = 2;  // online, offline, away
+  google.protobuf.Timestamp last_seen = 3;
+}
+
+message TypingIndicator {
+  string chat_room_id = 1;
+  string account_id = 2;
+  bool is_typing = 3;
+}
+
+// Common Messages
+message ChatRoom {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  string creator_account_id = 4;
+  repeated Participant participants = 5;
+  Message last_message = 6;
+  string status = 7;
+  string background_url = 8;
+  string background = 9;
+  google.protobuf.Timestamp created_at = 10;
+  google.protobuf.Timestamp updated_at = 11;
+  google.protobuf.Timestamp last_message_at = 12;
+  string last_message_text = 13;
+  string last_message_sender = 14;
+  repeated string muted_by = 15;
+  bool is_group = 16;
+  int32 unread_count = 17;
+}
+
+message Participant {
+  string account_id = 1;
+  string role = 2;  // admin, member
+  bool is_muted = 3;
+  google.protobuf.Timestamp muted_until = 4;
+  google.protobuf.Timestamp joined_at = 5;
+  google.protobuf.Timestamp last_read_at = 6;
+}
+
+message Message {
+  string id = 1;
+  string chat_room_id = 2;
+  string sender_account_id = 3;
+  string receiver_account_id = 4;  // For private messages
+  string content = 5;
+  string message_type = 6;
+  map<string, string> metadata = 7;
+  string reply_to_message_id = 8;
+  repeated string liked_by = 9;
+  string status = 10;  // sent, delivered, read
+  bool is_private = 11;
+  google.protobuf.Timestamp created_at = 12;
+  google.protobuf.Timestamp updated_at = 13;
+}
+
+message ChatRequest {
+  string id = 1;
+  string sender_account_id = 2;
+  string account_id = 3;
+  string status = 4;
+  string message = 5;
+  google.protobuf.Timestamp created_at = 6;
+  google.protobuf.Timestamp updated_at = 7;
+}
+
+message GetMessagesByAccountIDRequest {
+  string account_id = 1;
+  int32 limit = 2;
+  string next_page_token = 3; // base64-encoded Cassandra paging state
+}
+
+message GetMessagesByAccountIDResponse {
+  repeated Message messages = 1;
+  string next_page_token = 2; // base64-encoded Cassandra paging state for next page, empty if no more
+}
