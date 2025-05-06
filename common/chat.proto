@@ -35,6 +35,9 @@ service ChatService {
 
   // User Messages Management
   rpc GetMessagesByAccountID(GetMessagesByAccountIDRequest) returns (GetMessagesByAccountIDResponse) {}
+
+  // Mute/Unmute/Status
+  rpc GetMuteStatus(GetMuteStatusRequest) returns (GetMuteStatusResponse) {};
 }
 
 // Search Request
@@ -101,7 +104,7 @@ message DeleteAllChatRoomsRequest {
 message MuteChatRequest {
   string chat_room_id = 1;
   string account_id = 2;
-  google.protobuf.Timestamp mute_until = 3;  // Optional, if not set mute indefinitely
+  string mute_until = 3;
 }
 
 message UnmuteChatRequest {
@@ -228,7 +231,7 @@ message ChatRoom {
   google.protobuf.Timestamp last_message_at = 12;
   string last_message_text = 13;
   string last_message_sender = 14;
-  repeated string muted_by = 15;
+  repeated MutedUser muted_users = 15;
   bool is_group = 16;
   int32 unread_count = 17;
 }
@@ -277,4 +280,19 @@ message GetMessagesByAccountIDRequest {
 message GetMessagesByAccountIDResponse {
   repeated Message messages = 1;
   string next_page_token = 2; // base64-encoded Cassandra paging state for next page, empty if no more
+}
+
+message MutedUser {
+  string account_id = 1;
+  google.protobuf.Timestamp muted_until = 2;
+}
+
+message GetMuteStatusRequest {
+  string chat_room_id = 1;
+  string account_id = 2;
+}
+
+message GetMuteStatusResponse {
+  bool is_muted = 1;
+  google.protobuf.Timestamp mute_until = 2;
 }
