@@ -26,18 +26,29 @@ service ChatService {
   rpc GetMessages(GetMessagesRequest) returns (GetMessagesResponse) {}
   rpc LikeMessage(LikeMessageRequest) returns (google.protobuf.Empty) {}
   rpc UnlikeMessage(UnlikeMessageRequest) returns (google.protobuf.Empty) {}
+  rpc MarkMessagesAsRead(MarkMessagesAsReadRequest) returns (google.protobuf.Empty) {}
 
   // Chat Request Management
   rpc AcceptChatRequest(AcceptChatRequestRequest) returns (google.protobuf.Empty) {}
   rpc DeclineChatRequest(DeclineChatRequestRequest) returns (google.protobuf.Empty) {}
-  rpc GetChatRequests(GetChatRequestsRequest) returns (GetChatRequestsResponse) {}
   rpc DeleteChatRequest(DeleteChatRequestRequest) returns (google.protobuf.Empty) {}
+  rpc BlockChatRequest(BlockChatRequestRequest) returns (google.protobuf.Empty) {}
 
   // User Messages Management
   rpc GetMessagesByAccountID(GetMessagesByAccountIDRequest) returns (GetMessagesByAccountIDResponse) {}
 
   // Mute/Unmute/Status
   rpc GetMuteStatus(GetMuteStatusRequest) returns (GetMuteStatusResponse) {};
+
+  // Chat Request Message Management
+  rpc UpdateChatRequestMessage(UpdateChatRequestMessageRequest) returns (google.protobuf.Empty) {};
+
+  // Get chat requests
+  rpc GetReceivedChatRequests(GetReceivedChatRequestsRequest) returns (GetReceivedChatRequestsResponse) {};
+  rpc GetSentChatRequests(GetSentChatRequestsRequest) returns (GetSentChatRequestsResponse) {};
+
+  // Add new RPC for chat request
+  rpc NewChatRequest(NewChatRequestRequest) returns (NewChatRequestResponse) {};
 }
 
 // Search Request
@@ -151,6 +162,8 @@ message GetMessagesResponse {
 message LikeMessageRequest {
   string message_id = 1;
   string account_id = 2;
+  string chat_room_id = 3;
+  google.protobuf.Timestamp created_at = 4;
 }
 
 message UnlikeMessageRequest {
@@ -171,18 +184,6 @@ message DeclineChatRequestRequest {
 message BlockChatRequestRequest {
   string request_id = 1;
   string account_id = 2;
-}
-
-message GetChatRequestsRequest {
-  string account_id = 1;
-  string status = 2;  // Optional, filter by status
-  int32 limit = 3;
-  string next_page_token = 4; // base64-encoded Cassandra paging state
-}
-
-message GetChatRequestsResponse {
-  repeated ChatRequest requests = 1;
-  string next_page_token = 2; // base64-encoded Cassandra paging state for next page, empty if no more
 }
 
 message DeleteChatRequestRequest {
@@ -228,9 +229,6 @@ message ChatRoom {
   string background = 9;
   google.protobuf.Timestamp created_at = 10;
   google.protobuf.Timestamp updated_at = 11;
-  google.protobuf.Timestamp last_message_at = 12;
-  string last_message_text = 13;
-  string last_message_sender = 14;
   repeated MutedUser muted_users = 15;
   bool is_group = 16;
   int32 unread_count = 17;
@@ -264,11 +262,12 @@ message Message {
 message ChatRequest {
   string id = 1;
   string sender_account_id = 2;
-  string account_id = 3;
-  string status = 4;
-  string message = 5;
-  google.protobuf.Timestamp created_at = 6;
-  google.protobuf.Timestamp updated_at = 7;
+  string receiver_account_id = 3;
+  string chat_room_id = 4;
+  string status = 5;
+  string message = 6;
+  google.protobuf.Timestamp created_at = 7;
+  google.protobuf.Timestamp updated_at = 8;
 }
 
 message GetMessagesByAccountIDRequest {
@@ -295,4 +294,49 @@ message GetMuteStatusRequest {
 message GetMuteStatusResponse {
   bool is_muted = 1;
   google.protobuf.Timestamp mute_until = 2;
+}
+
+message UpdateChatRequestMessageRequest {
+  string request_id = 1;   // chat_request.id (UUID)
+  string account_id = 2;   // chat_request.account_id (UUID, for partition key)
+  string message = 3;      // The message to set
+}
+
+message GetReceivedChatRequestsRequest {
+  string account_id = 1;
+  int32 limit = 2;
+  string next_page_token = 3;
+}
+
+message GetReceivedChatRequestsResponse {
+  repeated ChatRequest requests = 1;
+  string next_page_token = 2;
+}
+
+message GetSentChatRequestsRequest {
+  string account_id = 1;
+  int32 limit = 2;
+  string next_page_token = 3;
+}
+
+message GetSentChatRequestsResponse {
+  repeated ChatRequest requests = 1;
+  string next_page_token = 2;
+}
+
+message NewChatRequestRequest {
+  string sender_account_id = 1;
+  string receiver_account_id = 2;
+  string message = 3;
+}
+
+message NewChatRequestResponse {
+  ChatRequest chat_request = 1;
+}
+
+// Request to mark messages in a chat room as read up to a certain timestamp.
+message MarkMessagesAsReadRequest {
+  string chat_room_id = 1;
+  string account_id = 2;
+  google.protobuf.Timestamp until_time = 3;
 }
