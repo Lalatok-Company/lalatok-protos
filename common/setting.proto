@@ -32,15 +32,22 @@ message PrivacySetting {
   google.protobuf.Timestamp updated_at = 10;
 }
 
-// System Setting
+// System Setting represents user preferences for system-wide settings
 message SystemSetting {
+  // Basic fields
   string id = 1;
   string account_id = 2;
-  string language = 3;
-  string theme = 4;
-  bool autoplay_videos = 5;
-  bool data_saver = 6;
-  string location_precision = 7;
+
+  // Language and units
+  string language = 3;          // Language code (e.g., "en_US", "en_UK", "es", "de", "fr", "zh_CN", "ja", "vi", "ko", "pt")
+  string distance_units = 4;    // Distance unit ("miles" or "km")
+  
+  // Map settings
+  string map_style = 5;         // Map style ("auto", "light", "dark")
+  bool heatmap_enabled = 6;     // Toggle for heatmap visualization
+  bool weather_enabled = 7;     // Toggle for weather overlay
+  
+  // Metadata
   google.protobuf.Timestamp created_at = 8;
   google.protobuf.Timestamp updated_at = 9;
 }
@@ -78,22 +85,11 @@ enum LocationVisibilityType {
   VISIBILITY_TYPE_HIDDEN = 4;     // Location completely hidden
 }
 
-enum GhostModeDuration {
-  DURATION_UNSPECIFIED = 0;
-  DURATION_2H = 1;      // 2 hours
-  DURATION_8H = 2;      // 8 hours
-  DURATION_24H = 3;     // 24 hours
-  DURATION_FOREVER = 4; // Forever
-}
 
 message GhostModeSetting {
-  string id = 1;
-  string account_id = 2;
-  string bff_account_id = 3;
-  LocationVisibilityType visibility_type = 4;
-  GhostModeDuration duration = 5;
-  google.protobuf.Timestamp created_at = 6;
-  google.protobuf.Timestamp updated_at = 7;
+  string bff_account_id = 1;
+  string duration = 2;
+  LocationVisibilityType visibility_type = 3;
 }
 
 // Combined Settings
@@ -134,6 +130,12 @@ message UpdateSettingRequest {
     PrivacySetting privacy = 2;
     SystemSetting system = 3;
     NotificationSetting notification = 4;
-    GhostModeSetting ghost_mode = 5;
+    UpdateGhostModeSetting ghost_mode = 5;
   }
+}
+
+message UpdateGhostModeSetting {
+  repeated string bff_account_ids = 1;
+  string duration = 2;
+  LocationVisibilityType visibility_type = 3;
 }
