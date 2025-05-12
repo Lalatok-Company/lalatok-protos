@@ -115,7 +115,6 @@ message DeleteAllChatRoomsRequest {
 message MuteChatRequest {
   string chat_room_id = 1;
   string account_id = 2;
-  string mute_until = 3;
 }
 
 message UnmuteChatRequest {
@@ -229,7 +228,6 @@ message ChatRoom {
   string background = 9;
   google.protobuf.Timestamp created_at = 10;
   google.protobuf.Timestamp updated_at = 11;
-  repeated MutedUser muted_users = 15;
   bool is_group = 16;
   int32 unread_count = 17;
 }
@@ -238,9 +236,8 @@ message Participant {
   string account_id = 1;
   string role = 2;  // admin, member
   bool is_muted = 3;
-  google.protobuf.Timestamp muted_until = 4;
-  google.protobuf.Timestamp joined_at = 5;
-  google.protobuf.Timestamp last_read_at = 6;
+  google.protobuf.Timestamp joined_at = 4;
+  google.protobuf.Timestamp last_read_at = 5;
 }
 
 message Message {
@@ -257,7 +254,7 @@ message Message {
   bool is_private = 11;
   google.protobuf.Timestamp created_at = 12;
   google.protobuf.Timestamp updated_at = 13;
-  Message reply_to_message = 14; // The full replied-to message, if any
+  Message reply_to_message = 14;
 }
 
 message ChatRequest {
@@ -282,11 +279,6 @@ message GetMessagesByAccountIDResponse {
   string next_page_token = 2; // base64-encoded Cassandra paging state for next page, empty if no more
 }
 
-message MutedUser {
-  string account_id = 1;
-  google.protobuf.Timestamp muted_until = 2;
-}
-
 message GetMuteStatusRequest {
   string chat_room_id = 1;
   string account_id = 2;
@@ -294,7 +286,6 @@ message GetMuteStatusRequest {
 
 message GetMuteStatusResponse {
   bool is_muted = 1;
-  google.protobuf.Timestamp mute_until = 2;
 }
 
 message UpdateChatRequestMessageRequest {
