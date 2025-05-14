@@ -9,9 +9,15 @@ service PlaceService {
 
   rpc CreatePlace (CreatePlaceReq) returns (CreatePlaceRes);
   rpc GetPlaces (GetPlacesReq) returns (GetPlacesRes);
+  rpc GetPlacesByIds (GetPlacesByIdsReq) returns (GetPlacesByIdsRes);
   rpc GetDetailPlace (GetDetailPlaceReq) returns (GetDetailPlaceRes);
   rpc DeletePlace (DeletePlaceReq) returns (DeletePlaceRes);
   rpc UpdatePlace (UpdatePlaceReq) returns (UpdatePlaceRes);
+
+  rpc CreateCheckin (CreateCheckinReq) returns (CreateCheckinRes);
+  rpc DeleteCheckin (DeleteCheckinReq) returns (DeleteCheckinRes);
+  rpc GetCheckinByAccount (GetCheckinByAccountReq) returns (GetCheckinByAccountRes);
+  rpc GetCheckinByPlace (GetCheckinByPlaceReq) returns (GetCheckinByPlaceRes);
 }
 
 // Category
@@ -69,6 +75,14 @@ message GetPlacesRes {
   string next_page_token = 2;
 }
 
+message GetPlacesByIdsReq {
+  repeated string place_ids = 1;
+}
+
+message GetPlacesByIdsRes {
+  repeated Place places = 1;
+}
+
 message GetDetailPlaceReq {
   string place_id = 1;
 }
@@ -93,4 +107,46 @@ message UpdatePlaceReq {
 
 message UpdatePlaceRes {
   bool status = 1;
+}
+
+// Checkin
+message Checkin {
+  string id = 1;
+  string place_id = 2;
+  string account_id = 3;
+  string created_at = 4; // YYYY-MM-DD HH:MM:SS
+}
+
+message CreateCheckinReq {
+  string place_id = 2;
+  string account_id = 3;
+}
+
+message CreateCheckinRes {
+  string checkin_id = 1;
+}
+
+message DeleteCheckinReq {
+  string checkin_id = 1;
+}
+
+message DeleteCheckinRes {
+  bool status = 1;
+}
+
+message GetCheckinByAccountReq {
+  string account_id = 1;
+  string date = 2; // YYYY-MM-DD
+}
+
+message GetCheckinByAccountRes {
+  repeated Checkin checkins = 1;
+}
+
+message GetCheckinByPlaceReq {
+  string place_id = 1;
+}
+
+message GetCheckinByPlaceRes {
+  repeated Checkin checkins = 1;
 }
