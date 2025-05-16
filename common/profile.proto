@@ -19,6 +19,7 @@ service ProfileService {
   rpc Create(CreateRequest) returns (CreateResponse);
   rpc Get(GetRequest) returns (Profile);
   rpc GetByAccount(GetByAccountRequest) returns (Profile);
+  rpc GetByUsername(GetByUsernameRequest) returns (Profile);
   rpc ListByAccounts(ListByAccountsRequest) returns (ListByAccountsResponse);
   rpc Update(UpdateRequest) returns (Profile);
   rpc Delete(DeleteRequest) returns (DeleteResponse);
@@ -47,6 +48,10 @@ message GetRequest {
 
 message GetByAccountRequest {
   string account_id = 1;
+}
+
+message GetByUsernameRequest {
+  string username = 1;
 }
 
 message ListByAccountsRequest {
