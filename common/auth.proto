@@ -30,8 +30,9 @@ message LoginRequest {
 
 message LoginResponse {
     string access_token = 1;
-    string refresh_token = 2;
-    int32 expires_in = 3;
+    string ws_token = 2;
+    string refresh_token = 3;
+    int32 expires_in = 4;
 }
 
 // Login by Phone request
@@ -47,8 +48,9 @@ message RegisterRequest {
 
 message RegisterResponse {
     string access_token = 1;
-    string refresh_token = 2;
-    int32 expires_in = 3;
+    string ws_token = 2;
+    string refresh_token = 3;
+    int32 expires_in = 4;
 }
 
 // Refresh token request and response
@@ -58,7 +60,8 @@ message RefreshTokenRequest {
 
 message RefreshTokenResponse {
     string access_token = 1;
-    int32 expires_in = 2;
+    string ws_token = 2;
+    int32 expires_in = 3;
 }
 
 // Validate token request and response
