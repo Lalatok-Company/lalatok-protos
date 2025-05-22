@@ -12,6 +12,8 @@ service SettingService {
   // Account Settings
   rpc GetAccountSetting(GetAccountSettingRequest) returns (GetAccountSettingResponse);
   rpc UpdateSetting(UpdateSettingRequest) returns (google.protobuf.Empty);
+  rpc BlockUser(BlockUserRequest) returns (google.protobuf.Empty);
+  rpc UnblockUser(UnblockUserRequest) returns (google.protobuf.Empty);
   
   // BFF Notification Settings
   rpc GetNotificationBffSetting(GetNotificationBffSettingRequest) returns (NotificationBffSetting);
@@ -138,4 +140,16 @@ message UpdateGhostModeSetting {
   repeated string bff_account_ids = 1;
   string duration = 2;
   LocationVisibilityType visibility_type = 3;
+}
+
+// New request message for BlockUser RPC
+message BlockUserRequest {
+  string account_id = 1;        // The account ID of the user performing the block
+  string user_to_block_id = 2;  // The account ID of the user to be blocked
+}
+
+// New request message for UnblockUser RPC
+message UnblockUserRequest {
+  string account_id = 1;          // The account ID of the user performing the unblock
+  string user_to_unblock_id = 2;  // The account ID of the user to be unblocked
 }
