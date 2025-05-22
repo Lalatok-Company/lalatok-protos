@@ -21,6 +21,8 @@ message UpdateLocationReq {
 
 message UpdateLocationRes {
   bool success = 1;
+  double lat = 2;
+  double lng = 3;
 }
 
 // Get current locations by account_ids
