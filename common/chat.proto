@@ -13,6 +13,7 @@ service ChatService {
   rpc CreateChatRoom(CreateChatRoomRequest) returns (CreateChatRoomResponse) {}
   rpc GetChatRoom(GetChatRoomRequest) returns (GetChatRoomResponse) {}
   rpc SearchChatRooms(SearchChatRoomsRequest) returns (SearchChatRoomsResponse) {}
+  rpc SearchChatRoomsByUsername(SearchChatRoomsByUsernameRequest) returns (SearchChatRoomsByUsernameResponse) {}
   rpc GetChatRoomsByAccountID(GetChatRoomsByAccountIDRequest) returns (GetChatRoomsByAccountIDResponse) {}
   rpc LeaveChat(LeaveChatRequest) returns (google.protobuf.Empty) {}
   rpc DeclineAllPendingChatForAccount(DeclineAllPendingChatForAccountRequest) returns (google.protobuf.Empty) {}
@@ -34,6 +35,9 @@ service ChatService {
 
   // Mute/Unmute/Status
   rpc GetMuteStatus(GetMuteStatusRequest) returns (GetMuteStatusResponse) {};
+
+  // Participant username management
+  rpc UpdateParticipantUsername(UpdateParticipantUsernameRequest) returns (UpdateParticipantUsernameResponse);
 }
 
 // Search Request
@@ -47,6 +51,19 @@ message SearchChatRoomsRequest {
 message SearchChatRoomsResponse {
   repeated ChatRoom chat_rooms = 1;
   string next_page_token = 2; // base64-encoded Cassandra paging state for next page, empty if no more
+}
+
+// New Request/Response for username-specific search
+message SearchChatRoomsByUsernameRequest {
+  string current_account_id = 1; // ID of the user performing the search
+  string username_query = 2;     // Username string to search for in other participants
+  int32 limit = 3;
+  string page_state = 4;       // Opaque token for pagination (base64 encoded Cassandra page state)
+}
+
+message SearchChatRoomsByUsernameResponse {
+  repeated ChatRoom chat_rooms = 1;
+  string next_page_state = 2;  // Opaque token for the next page, empty if no more pages
 }
 
 // Chat Room Messages
@@ -174,6 +191,7 @@ message Participant {
   google.protobuf.Timestamp joined_at = 4;
   google.protobuf.Timestamp last_read_at = 5;
   string status = 6;                 // joined, pending, declined, blocked (replaces separate chat request concept)
+  string username = 7;
 }
 
 message Message {
@@ -236,4 +254,15 @@ message GetMuteStatusRequest {
 message GetMuteStatusResponse {
   bool is_muted = 1;
   google.protobuf.Timestamp muted_until = 2;
+}
+
+// Request and Response for updating participant username
+message UpdateParticipantUsernameRequest {
+  string account_id = 1; // UUID of the account whose username is to be updated
+  string new_username = 2;
+}
+
+message UpdateParticipantUsernameResponse {
+  bool success = 1; // Indicates if the update process was initiated successfully
+  // Optionally, add an error message string here if needed, though gRPC errors are preferred.
 }
