@@ -192,6 +192,7 @@ message Participant {
   google.protobuf.Timestamp last_read_at = 5;
   string status = 6;                 // joined, pending, declined, blocked (replaces separate chat request concept)
   string username = 7;
+  string background = 8;
 }
 
 message Message {
