@@ -18,6 +18,9 @@ service PlaceService {
   rpc DeleteCheckin (DeleteCheckinReq) returns (DeleteCheckinRes);
   rpc GetCheckinByAccount (GetCheckinByAccountReq) returns (GetCheckinByAccountRes);
   rpc GetCheckinByPlace (GetCheckinByPlaceReq) returns (GetCheckinByPlaceRes);
+
+  rpc FavoritePlace (FavoritePlaceReq) returns (FavoritePlaceRes);
+  rpc UnfavoritePlace (UnfavoritePlaceReq) returns (UnfavoritePlaceRes);
 }
 
 // Category
@@ -149,4 +152,21 @@ message GetCheckinByPlaceReq {
 
 message GetCheckinByPlaceRes {
   repeated Checkin checkins = 1;
+}
+
+// Favorite Place
+message FavoritePlaceReq {
+  string place_id = 1;
+  string account_id = 2;
+}
+message FavoritePlaceRes {
+  bool status = 1;
+}
+
+message UnfavoritePlaceReq {
+  string place_id = 1;
+  string account_id = 2;
+}
+message UnfavoritePlaceRes {
+  bool status = 1;
 }
