@@ -29,6 +29,8 @@ service SocialService {
   // Additional methods for friends
   rpc GetRelationshipByAccountId(GetRelationshipByAccountIdRequest) returns (GetRelationshipByAccountIdResponse);
   rpc GetRelationshipByAccountIds(GetRelationshipByAccountIdsRequest) returns (GetRelationshipByAccountIdsResponse);
+
+  rpc GetFollowersCount(GetFollowersCountRequest) returns (GetFollowersCountResponse);
 }
 
 message FollowRequest {
@@ -178,4 +180,11 @@ message GetRelationshipByAccountIdsResponse {
   repeated string friend_ids = 1;
   repeated string follower_ids = 2;
   repeated string following_ids = 3;
+}
+
+message GetFollowersCountRequest {
+  string account_id = 1;
+}
+message GetFollowersCountResponse {
+  int32 count = 1;
 }
