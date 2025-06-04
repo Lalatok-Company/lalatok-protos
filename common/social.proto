@@ -20,6 +20,7 @@ service SocialService {
   rpc GetSendFriendRequests(GetSendFriendRequestsRequest) returns (GetSendFriendRequestsResponse);
   rpc AcceptFriend(AcceptFriendRequest) returns (AcceptFriendResponse);
   rpc RejectFriend(RejectFriendRequest) returns (RejectFriendResponse);
+  rpc GetAllFriendRequests(GetAllFriendRequestsRequest) returns (GetAllFriendRequestsResponse);
   
   rpc GetFriends(GetFriendsRequest) returns (GetFriendsResponse);
   rpc IsFriend(IsFriendRequest) returns (IsFriendResponse);
@@ -144,6 +145,15 @@ message GetSendFriendRequestsRequest {
   int32 limit = 3;
 }
 message GetSendFriendRequestsResponse {
+  repeated string friend_request_ids = 1;
+}
+
+message GetAllFriendRequestsRequest {
+  string account_id = 1;
+  int32 page = 2;
+  int32 limit = 3;
+}
+message GetAllFriendRequestsResponse {
   repeated string friend_request_ids = 1;
 }
 
