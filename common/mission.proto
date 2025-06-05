@@ -1,0 +1,188 @@
+syntax = "proto3";
+
+package lalatok_mission_service;
+
+// This is the Go package name
+option go_package = "missionpb/";
+
+import "google/protobuf/timestamp.proto"; // For timestamp fields
+import "google/protobuf/struct.proto"; // For Criterion parameters
+
+service MissionService {
+  // --- Mission RPCs (Read-only) ---
+  rpc GetMission(GetMissionRequest) returns (MissionResponse);
+  rpc ListMissions(ListMissionsRequest) returns (ListMissionsResponse);
+
+  // --- Badge RPCs (Full CRUD) ---
+  rpc CreateBadge(CreateBadgeRequest) returns (BadgeResponse);
+  rpc GetBadge(GetBadgeRequest) returns (BadgeResponse);
+  rpc ListBadges(ListBadgesRequest) returns (ListBadgesResponse);
+  rpc UpdateBadge(UpdateBadgeRequest) returns (BadgeResponse);
+  rpc DeleteBadge(DeleteBadgeRequest) returns (DeleteBadgeResponse);
+
+  // --- UserBadge RPCs ---
+  rpc ClaimMissionReward(ClaimMissionRewardRequest) returns (UserBadgeResponse);
+  rpc ListUserBadges(ListUserBadgesRequest) returns (ListUserBadgesResponse);
+  rpc GetUserBadgeDetails(GetUserBadgeDetailsRequest) returns (UserBadgeResponse);
+
+  // --- User Mission Status RPC ---
+  rpc ListUserMissionStatus(ListUserMissionStatusRequest) returns (ListUserMissionStatusResponse);
+}
+
+// --- Criterion Message (for Mission Completion Criteria) ---
+message Criterion {
+  string type = 1;                       // e.g., "check_in_count", "photo_upload_count"
+  google.protobuf.Struct parameters = 2; // Specific parameters for the criterion type
+  string description = 3;                // Optional: Human-readable description
+}
+
+// --- Mission Messages (Definition remains for reads) ---
+message Mission {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  string badge_id_reward = 4;
+  string badge_name = 5;      // Denormalized from Badge entity (for convenience in Mission responses)
+  string badge_icon_url = 6;  // Denormalized from Badge entity
+  bool is_active = 7;
+  google.protobuf.Timestamp created_at = 8;
+  google.protobuf.Timestamp updated_at = 9;
+  repeated Criterion completion_criteria = 10;
+  int32 points_reward = 11;
+  google.protobuf.Timestamp starts_at = 12;   // Optional
+  google.protobuf.Timestamp ends_at = 13;     // Optional
+}
+
+// Request for getting a single mission
+message GetMissionRequest {
+  string id = 1;
+}
+
+// Response for a single mission
+message MissionResponse {
+  Mission mission = 1;
+}
+
+// Request for listing missions
+message ListMissionsRequest {
+  int32 page = 1;
+  int32 limit = 2;
+  bool active_only = 3; // Filter for active missions
+  // Potentially add more filters here: by badge_id_reward, by criteria type, etc.
+}
+
+// Response for listing missions
+message ListMissionsResponse {
+  repeated Mission missions = 1;
+  int32 total = 2;
+}
+
+// --- Badge Messages ---
+message Badge {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  string icon_url = 4;
+  google.protobuf.Timestamp created_at = 5;
+  google.protobuf.Timestamp updated_at = 6;
+}
+
+message CreateBadgeRequest {
+  string name = 1;
+  string description = 2;
+  string icon_url = 3;
+}
+
+// BadgeResponse returns a single badge
+message BadgeResponse {
+  Badge badge = 1;
+}
+
+message GetBadgeRequest {
+  string id = 1;
+}
+
+message ListBadgesRequest {
+  int32 page = 1;
+  int32 limit = 2;
+}
+
+message ListBadgesResponse {
+  repeated Badge badges = 1;
+  int32 total = 2;
+}
+
+message UpdateBadgeRequest {
+  string id = 1;
+  optional string name = 2;
+  optional string description = 3;
+  optional string icon_url = 4;
+}
+
+message DeleteBadgeRequest {
+  string id = 1;
+}
+
+message DeleteBadgeResponse {
+  bool success = 1;
+}
+
+// --- UserBadge Messages ---
+message UserBadge {
+  string user_id = 1;
+  string badge_id = 2;
+  string badge_name = 3;          // Denormalized
+  string badge_icon_url = 4;      // Denormalized
+  string mission_id_completed = 5; // Optional
+  string mission_name = 6;        // Denormalized, Optional
+  google.protobuf.Timestamp claimed_at = 7;
+}
+
+message ClaimMissionRewardRequest {
+  string user_id = 1;   // Typically from authenticated user context
+  string mission_id = 2;
+}
+
+// UserBadgeResponse returns a single UserBadge entry
+message UserBadgeResponse {
+  UserBadge user_badge = 1;
+}
+
+message ListUserBadgesRequest {
+  string user_id = 1; // Typically from authenticated user context
+  int32 page = 2;
+  int32 limit = 3;
+}
+
+message ListUserBadgesResponse {
+  repeated UserBadge user_badges = 1;
+  int32 total = 2;
+}
+
+message GetUserBadgeDetailsRequest {
+    string user_id = 1;
+    string badge_id = 2;
+}
+
+// --- User Mission Status Messages ---
+message ListUserMissionStatusRequest {
+  string user_id = 1;
+  int32 page = 2;
+  int32 limit = 3;
+  // Potentially add filters here, e.g., status ("completed", "in_progress", "not_started")
+  // or filter by mission_ids
+}
+
+message UserMissionStatusEntry {
+  Mission mission_details = 1;      // Full mission details, including its completion_criteria
+  bool is_completed = 2;          // True if the user has already claimed the reward for this mission
+  google.protobuf.Timestamp completed_at = 3; // Optional: When the reward was claimed
+  // We could add a "progress" field here in the future if missions have multiple steps
+  // or quantifiable progress towards a single criterion.
+  // For now, completion is binary (reward claimed or not).
+}
+
+message ListUserMissionStatusResponse {
+  repeated UserMissionStatusEntry mission_statuses = 1;
+  int32 total_available_missions = 2; // Total number of missions considered (e.g., active ones)
+}
