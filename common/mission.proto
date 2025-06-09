@@ -13,6 +13,8 @@ service MissionService {
   rpc ListUserMissionStatus(ListUserMissionStatusRequest) returns (ListUserMissionStatusResponse);
   // Update mission progress based on user actions/events and automatically claim rewards.
   rpc UpdateMissionProgress(UpdateMissionProgressRequest) returns (UpdateMissionProgressResponse);
+  // Get a user's earned badges.
+  rpc ListUserBadges(ListUserBadgesRequest) returns (ListUserBadgesResponse);
 }
 
 // --- Shared Messages ---
@@ -83,4 +85,26 @@ message CompletedMission {
 message UpdateMissionProgressResponse {
   bool success = 1;
   repeated CompletedMission completed_missions = 2; // A list of missions completed by this event
+}
+
+// --- User Badge Messages ---
+
+message ListUserBadgesRequest {
+  string user_id = 1;
+  int32 page = 2;
+  int32 limit = 3;
+}
+
+message UserBadge {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  string icon_url = 4;
+  string animated_url = 5;
+  google.protobuf.Timestamp earned_at = 6;
+}
+
+message ListUserBadgesResponse {
+  repeated UserBadge badges = 1;
+  int32 total_badges = 2;
 }
