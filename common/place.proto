@@ -48,6 +48,7 @@ message Place {
   double lat = 6;
   double lng = 7;
   string category_id = 8;
+  string checkin_at = 9; // YYYY-MM-DD HH:MM:SS
 }
 
 message CreatePlaceReq {
@@ -141,7 +142,8 @@ message DeleteCheckinRes {
 
 message GetCheckinByAccountReq {
   string account_id = 1;
-  string date = 2; // YYYY-MM-DD
+  string start_date = 2;
+  string end_date = 3;
 }
 
 message GetCheckinByAccountRes {
