@@ -94,12 +94,19 @@ message GhostModeSetting {
   LocationVisibilityType visibility_type = 3;
 }
 
+// Meetup Setting
+message MeetupSetting {
+  bool visibility = 1;
+  string duration = 2;
+}
+
 // Combined Settings
 message AccountSettings {
   PrivacySetting privacy = 1;
   SystemSetting system = 2;
   NotificationSetting notification = 3;
-  repeated GhostModeSetting ghost_mode = 4;
+  MeetupSetting meetup = 4;
+  repeated GhostModeSetting ghost_mode = 5;
 }
 
 // Request/Response Messages
@@ -133,6 +140,7 @@ message UpdateSettingRequest {
     SystemSetting system = 3;
     NotificationSetting notification = 4;
     UpdateGhostModeSetting ghost_mode = 5;
+    MeetupSetting meetup = 6;
   }
 }
 
