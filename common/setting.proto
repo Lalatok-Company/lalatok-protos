@@ -98,6 +98,7 @@ message GhostModeSetting {
 message MeetupSetting {
   bool visibility = 1;
   string duration = 2;
+  string expiration = 3;
 }
 
 // Combined Settings
