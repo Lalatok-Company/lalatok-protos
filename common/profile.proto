@@ -72,7 +72,7 @@ message UpdateRequest {
   string gender = 4;
   string birth_day = 5;
   string mood = 6;
-  repeated string badges = 7;
+  RepeatedStringValue badges = 7;
 }
 
 message UpdateResponse {
@@ -121,4 +121,8 @@ message GetProfilesByAccountIDRequest {
 
 message GetProfilesByAccountIDResponse {
   repeated Profile profiles = 1;
+}
+
+message RepeatedStringValue {
+  repeated string values = 1;
 }
