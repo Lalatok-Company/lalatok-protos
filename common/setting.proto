@@ -14,6 +14,7 @@ service SettingService {
   rpc UpdateSetting(UpdateSettingRequest) returns (google.protobuf.Empty);
   rpc BlockUser(BlockUserRequest) returns (google.protobuf.Empty);
   rpc UnblockUser(UnblockUserRequest) returns (google.protobuf.Empty);
+  rpc CreateReport(CreateReportRequest) returns (CreateReportResponse);
   
   // BFF Notification Settings
   rpc GetNotificationBffSetting(GetNotificationBffSettingRequest) returns (NotificationBffSetting);
@@ -94,12 +95,20 @@ message GhostModeSetting {
   LocationVisibilityType visibility_type = 3;
 }
 
+// Meetup Setting
+message MeetupSetting {
+  bool visibility = 1;
+  string duration = 2;
+  string expiration = 3;
+}
+
 // Combined Settings
 message AccountSettings {
   PrivacySetting privacy = 1;
   SystemSetting system = 2;
   NotificationSetting notification = 3;
-  repeated GhostModeSetting ghost_mode = 4;
+  MeetupSetting meetup = 4;
+  repeated GhostModeSetting ghost_mode = 5;
 }
 
 // Request/Response Messages
@@ -133,6 +142,7 @@ message UpdateSettingRequest {
     SystemSetting system = 3;
     NotificationSetting notification = 4;
     UpdateGhostModeSetting ghost_mode = 5;
+    MeetupSetting meetup = 6;
   }
 }
 
@@ -152,4 +162,26 @@ message BlockUserRequest {
 message UnblockUserRequest {
   string account_id = 1;          // The account ID of the user performing the unblock
   string user_to_unblock_id = 2;  // The account ID of the user to be unblocked
+}
+
+// Report message
+message Report {
+  string id = 1;
+  string account_id = 2;
+  string report_type = 3;
+  string content = 4;
+  google.protobuf.Timestamp created_at = 5;
+  google.protobuf.Timestamp updated_at = 6;
+  string reported_account_id = 7;
+}
+
+message CreateReportRequest {
+  string account_id = 1;
+  string report_type = 2;
+  string content = 3;
+  string reported_account_id = 4;
+}
+
+message CreateReportResponse {
+  Report report = 1;
 }
