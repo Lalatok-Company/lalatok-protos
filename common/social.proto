@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package social;
 
+import "google/protobuf/empty.proto";
+
 // This is the Go package name
 option go_package = "socialpb/";
 
@@ -31,6 +33,11 @@ service SocialService {
   rpc GetRelationshipByAccountIds(GetRelationshipByAccountIdsRequest) returns (GetRelationshipByAccountIdsResponse);
 
   rpc GetFollowersCount(GetFollowersCountRequest) returns (GetFollowersCountResponse);
+
+  // coming 
+  rpc CreateComing(CreateComingReq) returns (google.protobuf.Empty);
+  rpc GetComing(GetComingReq) returns (GetComingRes);
+  rpc DeleteComing(DeleteComingReq) returns (google.protobuf.Empty);
 }
 
 message FollowRequest {
@@ -187,4 +194,23 @@ message GetFollowersCountRequest {
 }
 message GetFollowersCountResponse {
   int32 count = 1;
+}
+
+// Coming
+message CreateComingReq {
+  string account_id = 1;
+  string target_id = 2;
+}
+
+message GetComingReq {
+  string account_id = 1;
+  string target_id = 2;
+}
+message GetComingRes {
+  bool is_coming = 1;
+}
+
+message DeleteComingReq {
+  string account_id = 1;
+  string target_id = 2;
 }
