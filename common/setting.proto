@@ -19,6 +19,14 @@ service SettingService {
   // BFF Notification Settings
   rpc GetNotificationBffSetting(GetNotificationBffSettingRequest) returns (NotificationBffSetting);
   rpc UpdateNotificationBffSetting(UpdateNotificationBffSettingRequest) returns (google.protobuf.Empty);
+
+  // SOS Settings
+  rpc GetUserSOSSetting(GetUserSOSSettingRequest) returns (GetUserSOSSettingResponse);
+  rpc CreateSOSRequest(CreateSOSRequestRequest) returns (SOSRequest);
+  rpc RespondToSOSRequest(RespondToSOSRequestRequest) returns (SOSRequest);
+  rpc GetSOSRequests(GetSOSRequestsRequest) returns (GetSOSRequestsResponse);
+  rpc DeleteSOSRequest(DeleteSOSRequestRequest) returns (google.protobuf.Empty);
+  rpc GetSOSRequest(GetSOSRequestRequest) returns (SOSRequest);
 }
 
 // Privacy Setting
@@ -109,6 +117,7 @@ message AccountSettings {
   NotificationSetting notification = 3;
   MeetupSetting meetup = 4;
   repeated GhostModeSetting ghost_mode = 5;
+  UserSOSSetting sos_setting = 6;
 }
 
 // Request/Response Messages
@@ -143,6 +152,7 @@ message UpdateSettingRequest {
     NotificationSetting notification = 4;
     UpdateGhostModeSetting ghost_mode = 5;
     MeetupSetting meetup = 6;
+    UserSOSSetting sos_setting = 7;
   }
 }
 
@@ -184,4 +194,61 @@ message CreateReportRequest {
 
 message CreateReportResponse {
   Report report = 1;
+}
+
+// SOS Setting
+message SOSRequest {
+  string id = 1;
+  string requester_id = 2; // The one who requests
+  string responder_id = 3; // The one who is requested
+  string status = 4;
+  google.protobuf.Timestamp created_at = 7;
+  google.protobuf.Timestamp updated_at = 8;
+}
+
+// SOS Setting RPC Messages
+message CreateSOSRequestRequest {
+  string account_id = 1; // The one who requests
+  string friend_id = 2;  // The one who is requested
+}
+
+message RespondToSOSRequestRequest {
+  string account_id = 1; // The one responding
+  string request_id = 2; // The ID of the SOSSetting request
+  string status = 3; // "accepted" or "rejected"
+}
+
+message GetSOSRequestsRequest {
+  string account_id = 1;
+}
+
+message GetSOSRequestsResponse {
+  repeated SOSRequest sos_requests = 1;
+}
+
+message DeleteSOSRequestRequest {
+  string account_id = 1;
+  string sos_request_id = 2;
+}
+
+message GetSOSRequestRequest {
+  string request_id = 1;
+}
+
+// User's own SOS settings
+message UserSOSSetting {
+  string id = 1;
+  string account_id = 2;
+  bool add_button_sos_to_map = 3; // Default true, Tap to hide/show SOS button on the map
+  google.protobuf.Timestamp created_at = 4;
+  google.protobuf.Timestamp updated_at = 5;
+}
+
+message GetUserSOSSettingRequest {
+  string account_id = 1;
+}
+
+message GetUserSOSSettingResponse {
+  UserSOSSetting sos_setting = 1;
+  repeated SOSRequest sos_requests = 2;
 }
