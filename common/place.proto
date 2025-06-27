@@ -44,7 +44,9 @@ service PlaceService {
   rpc GetViewsByNewsFeedId (GetViewsByNewsFeedIdReq) returns (GetViewsByNewsFeedIdRes);
 
   rpc GetNewsFeedStats (GetNewsFeedStatsReq) returns (GetNewsFeedStatsRes);
- 
+  
+  // search places
+  rpc SearchPlaces (SearchPlacesReq) returns (SearchPlacesRes);
 }
 
 // Category
@@ -330,4 +332,13 @@ message GetNewsFeedStatsReq {
 message GetNewsFeedStatsRes {
   int64 like_count = 1;
   int64 view_count = 2;
+}
+
+// ----------- Search Places -------------
+message SearchPlacesReq {
+  string Query = 1; // Search query
+} 
+
+message SearchPlacesRes {
+  repeated Place places = 1;
 }
