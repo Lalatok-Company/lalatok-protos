@@ -80,7 +80,7 @@ message UpdateResponse {
 }
 
 message DeleteRequest {
-  string id = 1;
+  string account_id = 1;
 }
 
 message DeleteResponse {
