@@ -23,6 +23,7 @@ message UpdateLocationRes {
   bool success = 1;
   double lat = 2;
   double lng = 3;
+  bool has_visited = 4;
 }
 
 // Get current locations by account_ids
