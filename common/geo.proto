@@ -1,0 +1,54 @@
+syntax = "proto3";
+
+package geo;
+
+// This is the Go package name
+option go_package = "geopb/";
+
+service GeoService {
+    rpc GetLocation (GetLocationRequest) returns (LocationDetail);
+    rpc GetLocations (GetLocationsRequest) returns (GetLocationsResponse);
+
+    rpc SyncLocation (SyncLocationRequest) returns (SyncLocationResponse);
+}
+
+message Location {
+    double lat = 1;
+    double lng = 2;
+    string h3 = 3;
+}
+message LocationDetail {
+    double lat = 1;
+    double lng = 2;
+    string h3 = 3;
+    string country = 4;    
+    string province = 5;
+	string district = 6;
+    string ward = 7;
+    int64 country_id = 8;    
+    int64 province_id = 9;
+	int64 district_id = 10;
+    int64 ward_id = 11;
+}
+
+message GetLocationRequest {
+    double lat = 1;
+    double lng = 2;
+    string h3 = 3;
+}
+
+message GetLocationsRequest {
+    repeated Location locations = 1;
+}
+message GetLocationsResponse {
+    repeated LocationDetail locations = 1;
+}
+
+message SyncLocationRequest {
+    string path = 1;
+    int64 unitId = 2;
+    int32 level = 3;
+}
+message SyncLocationResponse {
+    string sync = 1;
+}

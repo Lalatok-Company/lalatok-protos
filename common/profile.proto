@@ -13,6 +13,7 @@ message Profile {
   string gender = 5;
   string birth_day = 6;
   string mood = 7;
+  repeated string badges = 8;
 }
 
 service ProfileService {
@@ -71,6 +72,7 @@ message UpdateRequest {
   string gender = 4;
   string birth_day = 5;
   string mood = 6;
+  RepeatedStringValue badges = 7;
 }
 
 message UpdateResponse {
@@ -78,7 +80,7 @@ message UpdateResponse {
 }
 
 message DeleteRequest {
-  string id = 1;
+  string account_id = 1;
 }
 
 message DeleteResponse {
@@ -119,4 +121,8 @@ message GetProfilesByAccountIDRequest {
 
 message GetProfilesByAccountIDResponse {
   repeated Profile profiles = 1;
+}
+
+message RepeatedStringValue {
+  repeated string values = 1;
 }
