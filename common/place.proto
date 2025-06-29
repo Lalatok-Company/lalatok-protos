@@ -62,6 +62,10 @@ service PlaceService {
 
   rpc GetPlaceCounters (GetPlaceCountersReq) returns (PlaceCounters);
   rpc GetPlaceCountersByIds (GetPlaceCountersByIdsReq) returns (GetPlaceCountersByIdsRes);
+
+  // Get user checked-in places
+  rpc GetCheckedInPlaces (GetCheckedInPlacesReq) returns (GetCheckedInPlacesRes);
+  rpc GetRecentCheckins (GetRecentCheckinsReq) returns (GetRecentCheckinsRes);
 }
 
 // Category
@@ -422,4 +426,20 @@ message GetPlaceCountersByIdsReq {
 }
 message GetPlaceCountersByIdsRes {
   repeated PlaceCounters place_counters = 1;
+}
+
+// ---- Get user checked-in places ----
+message GetCheckedInPlacesReq {
+  string account_id = 1;
+}
+message GetCheckedInPlacesRes {
+  repeated string place_ids = 1; // List of place IDs where the user has checked in
+}
+
+message GetRecentCheckinsReq {
+  string account_id = 1;
+  int32 limit = 2; // Optional, default to 10
+}
+message GetRecentCheckinsRes {
+  repeated Checkin checkins = 1; // List of recent check-ins
 }
