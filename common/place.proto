@@ -1,5 +1,7 @@
 syntax = "proto3";
+
 import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
 
 package place;
 
@@ -19,9 +21,6 @@ service PlaceService {
   rpc DeleteCheckin (DeleteCheckinReq) returns (DeleteCheckinRes);
   rpc GetCheckinByAccount (GetCheckinByAccountReq) returns (GetCheckinByAccountRes);
   rpc GetCheckinByPlace (GetCheckinByPlaceReq) returns (GetCheckinByPlaceRes);
-
-  rpc FavoritePlace (FavoritePlaceReq) returns (FavoritePlaceRes);
-  rpc UnfavoritePlace (UnfavoritePlaceReq) returns (UnfavoritePlaceRes);
 
   // News feed
   // CRUD
@@ -47,6 +46,22 @@ service PlaceService {
   
   // search places
   rpc SearchPlaces (SearchPlacesReq) returns (SearchPlacesRes);
+
+  // Like & Favorite Place
+  rpc LikePlace (LikePlaceReq) returns (google.protobuf.Empty);
+  rpc UnlikePlace (UnlikePlaceReq) returns (google.protobuf.Empty);
+  rpc GetLikedPlacesByAccountId (GetLikedPlacesByAccountIdReq) returns (GetLikedPlacesByAccountIdRes);
+  rpc CheckLikePlace (CheckLikePlaceReq) returns (CheckLikePlaceRes);
+  rpc CheckLikePlaceByIds (CheckLikePlaceByIdsReq) returns (CheckLikePlaceByIdsRes);
+
+  rpc FavoritePlace (FavoritePlaceReq) returns (google.protobuf.Empty);
+  rpc UnfavoritePlace (UnfavoritePlaceReq) returns (google.protobuf.Empty);
+  rpc GetFavoritePlacesByAccountId (GetFavoritePlacesByAccountIdReq) returns (GetFavoritePlacesByAccountIdRes);
+  rpc CheckFavoritePlace (CheckFavoritePlaceReq) returns (CheckFavoritePlaceRes);
+  rpc CheckFavoritePlaceByIds (CheckFavoritePlaceByIdsReq) returns (CheckFavoritePlaceByIdsRes);
+
+  rpc GetPlaceCounters (GetPlaceCountersReq) returns (PlaceCounters);
+  rpc GetPlaceCountersByIds (GetPlaceCountersByIdsReq) returns (GetPlaceCountersByIdsRes);
 }
 
 // Category
@@ -182,23 +197,6 @@ message GetCheckinByPlaceReq {
 
 message GetCheckinByPlaceRes {
   repeated Checkin checkins = 1;
-}
-
-// Favorite Place
-message FavoritePlaceReq {
-  string place_id = 1;
-  string account_id = 2;
-}
-message FavoritePlaceRes {
-  bool status = 1;
-}
-
-message UnfavoritePlaceReq {
-  string place_id = 1;
-  string account_id = 2;
-}
-message UnfavoritePlaceRes {
-  bool status = 1;
 }
 
 // ----------- News Feed -------------
@@ -341,4 +339,87 @@ message SearchPlacesReq {
 
 message SearchPlacesRes {
   repeated Place places = 1;
+}
+
+// ----------- Like & Favorite Place -------------
+// Like Place
+message LikePlaceReq {
+  string place_id = 1;
+  string account_id = 2;
+}
+message UnlikePlaceReq {
+  string place_id = 1;
+  string account_id = 2;
+}
+message GetLikedPlacesByAccountIdReq {
+  string account_id = 1;
+  int32 page_size = 2;
+  string next_page_token = 3;
+}
+message GetLikedPlacesByAccountIdRes {
+  repeated string place_ids = 1;
+  string next_page_token = 2;
+}
+message CheckLikePlaceReq {
+  string place_id = 1;
+  string account_id = 2;
+}
+message CheckLikePlaceRes {
+  bool is_liked = 1;
+}
+message CheckLikePlaceByIdsReq {
+  repeated string place_ids = 1;
+  string account_id = 2;
+}
+message CheckLikePlaceByIdsRes {
+  repeated string place_ids = 1; // List of place IDs that the account has liked
+}
+
+// Favorite Place
+message FavoritePlaceReq {
+  string place_id = 1;
+  string account_id = 2;
+}
+message UnfavoritePlaceReq {
+  string place_id = 1;
+  string account_id = 2;
+}
+message GetFavoritePlacesByAccountIdReq {
+  string account_id = 1;
+  int32 page_size = 2;
+  string next_page_token = 3;
+}
+message GetFavoritePlacesByAccountIdRes {
+  repeated string place_ids = 1;
+  string next_page_token = 2;
+}
+message CheckFavoritePlaceReq {
+  string place_id = 1;
+  string account_id = 2;
+}
+message CheckFavoritePlaceRes {
+  bool is_favorited = 1;
+}
+message CheckFavoritePlaceByIdsReq {
+  repeated string place_ids = 1;
+  string account_id = 2;
+}
+message CheckFavoritePlaceByIdsRes {
+  repeated string place_ids = 1; // List of place IDs that the account has favorited
+}
+
+// Place Counters
+message PlaceCounters {
+  int64 like_count = 1;
+  int64 favorite_count = 2;
+  int64 checkin_count = 3;
+}
+message GetPlaceCountersReq {
+  string place_id = 1;
+}
+message GetPlaceCountersByIdsReq {
+  repeated string place_ids = 1;
+}
+message GetPlaceCountersByIdsRes {
+  repeated PlaceCounters place_counters = 1;
 }
