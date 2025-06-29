@@ -177,6 +177,7 @@ message GetRelationshipByAccountIdResponse {
   bool is_following = 3;
   bool is_request_sent = 4;
   bool is_request_received = 5;
+  int32 days_as_friend = 6;
 }
 
 message GetRelationshipByAccountIdsRequest {
