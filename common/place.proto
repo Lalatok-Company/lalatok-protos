@@ -22,6 +22,8 @@ service PlaceService {
   rpc GetCheckinByAccount (GetCheckinByAccountReq) returns (GetCheckinByAccountRes);
   rpc GetCheckinByPlace (GetCheckinByPlaceReq) returns (GetCheckinByPlaceRes);
 
+  rpc GetAllPlaces (google.protobuf.Empty) returns (GetPlacesRes);
+
   // News feed
   // CRUD
   rpc CreateNewsFeed (CreateNewsFeedReq) returns (CreateNewsFeedRes);
