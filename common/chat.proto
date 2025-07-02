@@ -134,6 +134,7 @@ message SendMessageRequest {
   map<string, string> metadata = 6;  // For additional data like location coordinates, file info
   string reply_to_message_id = 7;    // Optional, for reply messages
   string reply_to_photo_id = 8;
+  bool isBlocked = 9;
 }
 
 message SendMessageResponse {
