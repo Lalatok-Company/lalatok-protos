@@ -15,7 +15,8 @@ service LocationService {
   rpc UpdateLocationSummary (UpdateLocationSummaryReq) returns (google.protobuf.Empty);
   rpc GetLocationSummary (GetLocationSummaryReq) returns (GetLocationSummaryRes);
 
-   rpc GetAccountByIds (GetAccountByIdsReq) returns (GetAccountsInBoxRes);
+  rpc GetAccountByIds (GetAccountByIdsReq) returns (GetAccountsInBoxRes);
+  rpc GetFootprintsByAccount (GetFootprintsByAccountReq) returns (GetFootprintsRes);
 }
 
 // Update location
@@ -127,4 +128,8 @@ message LocationSummary {
 
 message GetAccountByIdsReq {
   repeated string account_ids = 1;
+}
+
+message GetFootprintsByAccountReq {
+  string account_id = 1;
 }
