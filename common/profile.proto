@@ -1,5 +1,6 @@
 syntax = "proto3";
 import "google/protobuf/empty.proto";
+import "google/protobuf/wrappers.proto";
 
 package profile;
 
@@ -15,6 +16,7 @@ message Profile {
   string birth_day = 6;
   string mood = 7;
   repeated string badges = 8;
+  bool is_subscription = 9;
 }
 
 service ProfileService {
@@ -79,6 +81,7 @@ message UpdateRequest {
   string birth_day = 5;
   string mood = 6;
   RepeatedStringValue badges = 7;
+  google.protobuf.BoolValue is_subscription = 8;
 }
 
 message UpdateResponse {
