@@ -213,6 +213,7 @@ message Message {
   google.protobuf.Timestamp updated_at = 13;
   Message reply_to_message = 14;
   string reply_to_photo_id = 15;
+  bool is_blocked = 16;
 }
 
 message MarkMessagesAsReadRequest {
