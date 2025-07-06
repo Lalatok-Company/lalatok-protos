@@ -34,6 +34,9 @@ service SocialService {
 
   rpc GetFollowersCount(GetFollowersCountRequest) returns (GetFollowersCountResponse);
 
+  // Reset all relationships between two users
+  rpc ResetRelationship(ResetRelationshipRequest) returns (ResetRelationshipResponse);
+
   // coming 
   rpc CreateComing(CreateComingReq) returns (google.protobuf.Empty);
   rpc GetComing(GetComingReq) returns (GetComingRes);
@@ -230,4 +233,14 @@ message SuggestedFriend{
 }
 message GetSuggestedFriendsRes {
   repeated SuggestedFriend suggested_friends = 1;
+}
+
+// Reset Relationship Messages
+message ResetRelationshipRequest {
+  repeated string account_ids = 1;
+}
+
+message ResetRelationshipResponse {
+  bool success = 1;
+  string message = 2;
 }
