@@ -1,7 +1,9 @@
 syntax = "proto3";
 
 package location;
+
 import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
 
 option go_package = "locationpb/";
 
@@ -24,6 +26,8 @@ message UpdateLocationReq {
   string account_id = 1;
   double lat = 2;
   double lng = 3;
+  double speed = 4;
+  int32 battery = 5;
 }
 
 message UpdateLocationRes {
@@ -47,6 +51,8 @@ message Location {
   double lat = 2;
   double lng = 3;
   string timestamp = 4;
+  double speed = 5;
+  int32 battery = 6;
 }
 
 // Get footprints within bounding box
@@ -101,6 +107,9 @@ message Account {
   string account_id = 1;
   double lat = 2;
   double lng = 3;
+  double speed = 4;
+  int32 battery = 5;
+  google.protobuf.Timestamp timestamp = 6;
 }
 
 // Update location summary
