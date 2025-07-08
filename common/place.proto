@@ -68,6 +68,13 @@ service PlaceService {
   // Get user checked-in places
   rpc GetCheckedInPlaces (GetCheckedInPlacesReq) returns (GetCheckedInPlacesRes);
   rpc GetRecentCheckins (GetRecentCheckinsReq) returns (GetRecentCheckinsRes);
+
+  // Place detect 
+  rpc CreateDetectedPlace (PlaceDetected) returns (google.protobuf.Empty);
+  rpc GetDetectedPlaces (GetDetectedPlacesReq) returns (GetDetectedPlacesRes);
+  rpc UpdateDetectedPlace (UpdateDetectedPlaceReq) returns (google.protobuf.Empty);
+  rpc DeleteDetectedPlace (DeleteDetectedPlaceReq) returns (google.protobuf.Empty);
+  rpc GetDetectedPlaceById (GetDetectedPlaceByIdReq) returns (PlaceDetected);
 }
 
 // Category
@@ -444,4 +451,51 @@ message GetRecentCheckinsReq {
 }
 message GetRecentCheckinsRes {
   repeated Checkin checkins = 1; // List of recent check-ins
+}
+
+// ---- Detected Places ----
+
+// define the type of place
+enum PlaceTypeDetected {
+  PLACE_TYPE_UNSPECIFIED = 0;
+  HOME = 1;
+  SCHOOL = 2;
+  WORK = 3;
+}
+message PlaceDetected {
+  string place_id = 1;
+  string account_id = 2; 
+  PlaceTypeDetected place_type = 3;
+  string address = 4;
+  double lat = 5;
+  double lng = 6;
+  google.protobuf.Timestamp first_seen_at = 7;
+  google.protobuf.Timestamp last_seen_at = 8;
+  int32 total_days = 9;
+  int64 total_duration_seconds = 10;
+}
+
+message GetDetectedPlacesReq {
+  string account_id = 1;
+}
+message GetDetectedPlacesRes {
+  repeated PlaceDetected places = 1;
+}
+
+message UpdateDetectedPlaceReq {
+  string account_id = 1;
+  string place_id = 2;
+  int64 duration_seconds = 3;
+  int32 days = 4;
+  google.protobuf.Timestamp last_seen_at = 5;
+}
+
+message DeleteDetectedPlaceReq {
+  string account_id = 1;
+  string place_id = 2;
+}
+
+message GetDetectedPlaceByIdReq {
+  string account_id = 1;
+  string place_id = 2;
 }
