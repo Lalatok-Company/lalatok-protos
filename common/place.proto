@@ -73,6 +73,7 @@ service PlaceService {
   rpc CreateDetectedPlace (PlaceDetected) returns (google.protobuf.Empty);
   rpc GetDetectedPlaces (GetDetectedPlacesReq) returns (GetDetectedPlacesRes);
   rpc UpdateDetectedPlace (UpdateDetectedPlaceReq) returns (google.protobuf.Empty);
+  rpc UpdateTimeDetectedPlace (UpdateTimeDetectedPlaceReq) returns (google.protobuf.Empty);
   rpc DeleteDetectedPlace (DeleteDetectedPlaceReq) returns (google.protobuf.Empty);
   rpc GetDetectedPlaceById (GetDetectedPlaceByIdReq) returns (PlaceDetected);
 }
@@ -483,6 +484,14 @@ message GetDetectedPlacesRes {
 }
 
 message UpdateDetectedPlaceReq {
+  string account_id = 1;
+  string place_id = 2;
+  string address = 3;
+  double lat = 4;
+  double lng = 5;
+}
+
+message UpdateTimeDetectedPlaceReq {
   string account_id = 1;
   string place_id = 2;
   int64 duration_seconds = 3;
