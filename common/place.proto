@@ -76,6 +76,11 @@ service PlaceService {
   rpc UpdateTimeDetectedPlace (UpdateTimeDetectedPlaceReq) returns (google.protobuf.Empty);
   rpc DeleteDetectedPlace (DeleteDetectedPlaceReq) returns (google.protobuf.Empty);
   rpc GetDetectedPlaceById (GetDetectedPlaceByIdReq) returns (PlaceDetected);
+
+  // Ranking 
+  rpc PlaceRankingByCheckin (PlaceRankingByCheckinReq) returns (PlaceRankingByCheckinRes);
+  rpc AccountRankingByCheckin (AccountRankingByCheckinReq) returns (AccountRankingByCheckinRes);
+  rpc AccountRankingByPlace (AccountRankingByPlaceReq) returns (AccountRankingByPlaceRes);
 }
 
 // Category
@@ -114,6 +119,11 @@ message CreatePlaceReq {
   string category_id = 5;
   string owner_id = 6;
   bool friends_only = 7;
+
+  int64 country_id = 8;    
+  int64 province_id = 9;
+	int64 district_id = 10;
+  int64 ward_id = 11;
 }
 
 message CreatePlaceRes {
@@ -507,4 +517,38 @@ message DeleteDetectedPlaceReq {
 message GetDetectedPlaceByIdReq {
   string account_id = 1;
   string place_id = 2;
+}
+
+// Ranking
+message PlaceRanking {
+  string place_id = 1;
+  int64 checkin_count = 2;
+}
+message PlaceRankingByCheckinReq {
+  int64 osm_id = 1;
+  int32 osm_level = 2;
+  string place_type = 3;
+}
+message PlaceRankingByCheckinRes {
+  repeated PlaceRanking place_rankings = 1; 
+}
+
+message AccountRanking {
+  string account_id = 1;
+  int64 checkin_count = 2;
+}
+message AccountRankingByCheckinReq {
+  int64 osm_id = 1;
+  int32 osm_level = 2;
+  string place_type = 3;
+}
+message AccountRankingByCheckinRes {
+  repeated AccountRanking account_rankings = 1;
+}
+
+message AccountRankingByPlaceReq {
+  string place_id = 1;
+}
+message AccountRankingByPlaceRes {
+  repeated AccountRanking account_rankings = 1;
 }
