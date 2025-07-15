@@ -20,6 +20,7 @@ service AuthService {
     rpc ValidateToken (ValidateTokenRequest) returns (ValidateTokenResponse);
     rpc CheckPhoneExists (CheckPhoneExistsRequest) returns (CheckPhoneExistsResponse);
     rpc GetAccountsByPhone (GetAccountsByPhoneRequest) returns (GetAccountsByPhoneResponse);
+    rpc DeleteAccount (DeleteAccountRequest) returns (DeleteAccountResponse);
 }
 
 // Login request and response
@@ -90,4 +91,13 @@ message GetAccountsByPhoneRequest {
 
 message GetAccountsByPhoneResponse {
     repeated Account accounts = 1;
+}
+
+// Delete account request and response
+message DeleteAccountRequest {
+    string account_id = 1;
+}
+
+message DeleteAccountResponse {
+    bool success = 1;
 }

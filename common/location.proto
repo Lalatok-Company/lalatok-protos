@@ -1,7 +1,9 @@
 syntax = "proto3";
 
 package location;
+
 import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
 
 option go_package = "locationpb/";
 
@@ -11,6 +13,7 @@ service LocationService {
   rpc GetFootprints (GetFootprintsReq) returns (GetFootprintsRes);
   rpc GetRankings (GetRankingsReq) returns (GetRankingsRes);
   rpc GetAccountsInBox (GetAccountsInBoxReq) returns (GetAccountsInBoxRes);
+  rpc GetRankingFriend (GetRankingFriendReq) returns (GetRankingFriendRes);
 
   rpc UpdateLocationSummary (UpdateLocationSummaryReq) returns (google.protobuf.Empty);
   rpc GetLocationSummary (GetLocationSummaryReq) returns (GetLocationSummaryRes);
@@ -24,6 +27,8 @@ message UpdateLocationReq {
   string account_id = 1;
   double lat = 2;
   double lng = 3;
+  double speed = 4;
+  int32 battery = 5;
 }
 
 message UpdateLocationRes {
@@ -47,6 +52,8 @@ message Location {
   double lat = 2;
   double lng = 3;
   string timestamp = 4;
+  double speed = 5;
+  int32 battery = 6;
 }
 
 // Get footprints within bounding box
@@ -101,6 +108,9 @@ message Account {
   string account_id = 1;
   double lat = 2;
   double lng = 3;
+  double speed = 4;
+  int32 battery = 5;
+  google.protobuf.Timestamp timestamp = 6;
 }
 
 // Update location summary
@@ -132,4 +142,14 @@ message GetAccountByIdsReq {
 
 message GetFootprintsByAccountReq {
   string account_id = 1;
+}
+
+message GetRankingFriendReq {
+  repeated string account_ids = 1;
+  int64 osm_id = 2;
+  int64 osm_level = 3;
+  int32 limit = 4;
+}
+message GetRankingFriendRes {
+  repeated Ranking accounts = 1;
 }

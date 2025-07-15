@@ -10,6 +10,7 @@ service OtpService {
   rpc Create(CreateRequest) returns (CreateResponse);
   rpc Verify(VerifyRequest) returns (VerifyResponse);
   rpc Get(GetRequest) returns (GetResponse);
+  rpc SendMessage(SendMessageRequest) returns (SendMessageResponse);
 }
 
 // Create OTP request and response
@@ -38,4 +39,14 @@ message GetRequest {
 
 message GetResponse {
    string code = 1;
+}
+
+// Send message request and response
+message SendMessageRequest {
+  string phone_number = 1;
+  string message = 2;
+}
+
+message SendMessageResponse {
+  bool status = 1;
 }
