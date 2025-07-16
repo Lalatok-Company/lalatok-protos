@@ -173,7 +173,7 @@ message UpdatePlaceReq {
   string name = 2;
   string address = 3;
   string category_id = 4;
-  bool friends_only = 5;
+  optional bool friends_only = 5;
 }
 
 message UpdatePlaceRes {
