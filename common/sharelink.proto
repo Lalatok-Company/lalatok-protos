@@ -21,6 +21,7 @@ enum ShareType {
   SHARE_TYPE_LOCATION = 3;
   SHARE_TYPE_PHOTO = 4;
   SHARE_TYPE_HANGOUT = 5;
+  SHARE_TYPE_BADGES = 6;
 }
 
 message ShareLink {
