@@ -22,7 +22,11 @@ service NotificationService {
   rpc RemoveDeviceToken(RemoveDeviceTokenReq) returns (google.protobuf.Empty);
   rpc RemoveAllDeviceTokens(RemoveAllDeviceTokensReq) returns (google.protobuf.Empty);
 
-  rpc SendNotification(SendNotificationReq) returns (google.protobuf.Empty);
+  rpc SendNotification(SendNotificationReq) returns (SendNotificationRes);
+  rpc SendNotificationToAccountId(SendNotificationToAccountIdReq) returns (SendNotificationRes);
+  rpc SendNotificationToToken(SendNotificationToTokenReq) returns (SendNotificationRes);
+  rpc SendNotificationToTopic(SendNotificationToTopicReq) returns (SendNotificationRes);
+  rpc SendBulkNotification(SendBulkNotificationReq) returns (SendBulkNotificationRes);
 }
 
 message DeviceToken {
@@ -55,4 +59,49 @@ message SendNotificationReq {
   string body = 3;
   string image_url = 4;
   map<string, string> data = 5;
+}
+
+message SendNotificationToAccountIdReq {
+  string account_id = 1;
+  string title = 2;
+  string body = 3;
+  string image_url = 4;
+  map<string, string> data = 5;
+}
+
+message SendNotificationToTokenReq {
+  string fcm_token = 1;
+  string title = 2;
+  string body = 3;
+  string image_url = 4;
+  map<string, string> data = 5;
+}
+
+message SendNotificationToTopicReq {
+  string topic = 1;
+  string title = 2;
+  string body = 3;
+  string image_url = 4;
+  map<string, string> data = 5;
+}
+
+message SendBulkNotificationReq {
+  repeated string fcm_tokens = 1;
+  string title = 2;
+  string body = 3;
+  string image_url = 4;
+  map<string, string> data = 5;
+}
+
+message SendNotificationRes {
+  bool success = 1;
+  string message_id = 2;
+  string error_message = 3;
+}
+
+message SendBulkNotificationRes {
+  bool success = 1;
+  int32 success_count = 2;
+  int32 failure_count = 3;
+  repeated string failed_tokens = 4;
 }
