@@ -20,6 +20,7 @@ service LocationService {
 
   rpc GetAccountByIds (GetAccountByIdsReq) returns (GetAccountsInBoxRes);
   rpc GetFootprintsByAccount (GetFootprintsByAccountReq) returns (GetFootprintsRes);
+  rpc CheckLocationDuration (CheckLocationDurationReq) returns (CheckLocationDurationRes);
 }
 
 // Update location
@@ -152,4 +153,20 @@ message GetRankingFriendReq {
 }
 message GetRankingFriendRes {
   repeated Ranking accounts = 1;
+}
+
+// Check location duration
+message CheckLocationDurationReq {
+  string account_id = 1;
+  double lat = 2;
+  double lng = 3;
+}
+
+message CheckLocationDurationRes {
+  bool success = 1;
+  int32 duration_seconds = 2;
+  bool can_checkin = 3;
+  string message = 4;
+  double distance_meters = 5;
+  google.protobuf.Timestamp session_start = 6;
 }
