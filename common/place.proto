@@ -82,6 +82,9 @@ service PlaceService {
   rpc PlaceRankingByCheckin (PlaceRankingByCheckinReq) returns (PlaceRankingByCheckinRes);
   rpc AccountRankingByCheckin (AccountRankingByCheckinReq) returns (AccountRankingByCheckinRes);
   rpc AccountRankingByPlace (AccountRankingByPlaceReq) returns (AccountRankingByPlaceRes);
+
+  // Get unique checkin count by district
+  rpc GetUniqueCheckinCountByDistrict (GetUniqueCheckinCountByDistrictReq) returns (GetUniqueCheckinCountByDistrictRes);
 }
 
 // Category
@@ -566,4 +569,15 @@ message AccountRankingByPlaceReq {
 }
 message AccountRankingByPlaceRes {
   repeated AccountRanking account_rankings = 1;
+}
+
+// Get unique checkin count by district
+message GetUniqueCheckinCountByDistrictReq {
+  string account_id = 1;
+  int64 district_id = 2;
+}
+
+message GetUniqueCheckinCountByDistrictRes {
+  int64 unique_place_count = 1;
+  int64 total_checkin_count = 2;
 }
