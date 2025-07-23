@@ -20,6 +20,7 @@ service PlaceService {
   rpc CreateCheckin (CreateCheckinReq) returns (CreateCheckinRes);
   rpc DeleteCheckin (DeleteCheckinReq) returns (DeleteCheckinRes);
   rpc UpdateCheckinDuration (UpdateCheckinDurationReq) returns (UpdateCheckinDurationRes);
+  rpc UpdateCheckinDraftStatus (UpdateCheckinDraftStatusReq) returns (UpdateCheckinDraftStatusRes);
   rpc GetCheckinByAccount (GetCheckinByAccountReq) returns (GetCheckinByAccountRes);
   rpc GetCheckinByPlace (GetCheckinByPlaceReq) returns (GetCheckinByPlaceRes);
 
@@ -238,6 +239,15 @@ message UpdateCheckinDurationReq {
 }
 
 message UpdateCheckinDurationRes {
+  bool status = 1;
+}
+
+message UpdateCheckinDraftStatusReq {
+  string checkin_id = 1;
+  bool is_draft = 2;
+}
+
+message UpdateCheckinDraftStatusRes {
   bool status = 1;
 }
 
