@@ -25,8 +25,8 @@ service ChatService {
   // Message Management
   rpc SendMessage(SendMessageRequest) returns (SendMessageResponse) {}
   rpc GetMessages(GetMessagesRequest) returns (GetMessagesResponse) {}
-  rpc LikeMessage(LikeMessageRequest) returns (google.protobuf.Empty) {}
-  rpc UnlikeMessage(UnlikeMessageRequest) returns (google.protobuf.Empty) {}
+  rpc LikeMessage(LikeMessageRequest) returns (LikeMessageResponse) {}
+  rpc UnlikeMessage(UnlikeMessageRequest) returns (UnlikeMessageResponse) {}
   rpc MarkMessagesAsRead(MarkMessagesAsReadRequest) returns (google.protobuf.Empty) {}
 
   // Participant Status Management (Simplified Chat System)
@@ -166,6 +166,18 @@ message LikeMessageRequest {
 message UnlikeMessageRequest {
   string message_id = 1;
   string account_id = 2;
+}
+
+message LikeMessageResponse {
+  string message_id = 1;
+  string room_id = 2;
+  repeated string participants_ids = 3;
+}
+
+message UnlikeMessageResponse {
+  string message_id = 1;
+  string room_id = 2;
+  repeated string participants_ids = 3;
 }
 
 // Common Messages
