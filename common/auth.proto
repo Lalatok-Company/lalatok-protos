@@ -21,6 +21,7 @@ service AuthService {
     rpc CheckPhoneExists (CheckPhoneExistsRequest) returns (CheckPhoneExistsResponse);
     rpc GetAccountsByPhone (GetAccountsByPhoneRequest) returns (GetAccountsByPhoneResponse);
     rpc DeleteAccount (DeleteAccountRequest) returns (DeleteAccountResponse);
+    rpc GetMyAccount (GetMyAccountRequest) returns (GetMyAccountResponse);
 }
 
 // Login request and response
@@ -100,4 +101,14 @@ message DeleteAccountRequest {
 
 message DeleteAccountResponse {
     bool success = 1;
+}
+
+// Get my account request and response
+message GetMyAccountRequest {
+    string account_id = 1;
+}
+
+message GetMyAccountResponse {
+    string id = 1;
+    string phone = 2;
 }
