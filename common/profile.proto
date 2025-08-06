@@ -36,6 +36,11 @@ service ProfileService {
   rpc RecordProfileView(RecordProfileViewReq) returns (google.protobuf.Empty);
   rpc GetProfileViewers(GetProfileViewersReq) returns (GetProfileViewersRes);
   rpc GetProfileViewersToday(GetProfileViewersTodayReq) returns (GetProfileViewersRes);
+
+  // Emoji transaction methods
+  rpc SendEmoji(SendEmojiRequest) returns (SendEmojiResponse);
+  rpc GetReceivedEmojis(GetReceivedEmojisRequest) returns (GetReceivedEmojisResponse);
+  rpc CountUnclaimedEmojis(CountUnclaimedEmojisRequest) returns (CountUnclaimedEmojisResponse);
 }
 
 message CreateRequest {
@@ -150,4 +155,45 @@ message GetProfileViewersRes {
 }
 message GetProfileViewersTodayReq {
   string account_id = 1;
+}
+
+// Emoji transaction messages
+message SendEmojiRequest {
+  string sender_id = 1;
+  string recipient_id = 2;
+  string emoji_path = 3;
+  int32 quantity = 4;
+}
+
+message SendEmojiResponse {
+  string transaction_id = 1;
+  bool success = 2;
+  string message = 3;
+}
+
+message GetReceivedEmojisRequest {
+  string recipient_id = 1;
+  int32 limit = 2;
+}
+
+message EmojiTransaction {
+  string transaction_id = 1;
+  Profile sender = 2;
+  string emoji_url = 3;
+  string emoji_path = 4;
+  int32 quantity = 5;
+  string sent_at = 6;
+}
+
+message GetReceivedEmojisResponse {
+  repeated EmojiTransaction emojis = 1;
+  int32 total = 2;
+}
+
+message CountUnclaimedEmojisRequest {
+  string recipient_id = 1;
+}
+
+message CountUnclaimedEmojisResponse {
+  int32 count = 1;
 }
