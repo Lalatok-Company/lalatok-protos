@@ -20,6 +20,9 @@ service SettingService {
   rpc GetNotificationBffSetting(GetNotificationBffSettingRequest) returns (NotificationBffSetting);
   rpc UpdateNotificationBffSetting(UpdateNotificationBffSettingRequest) returns (google.protobuf.Empty);
 
+  // Ghost Mode Settings
+  rpc GetGhostModeSettingsForBFF(GetGhostModeSettingsForBFFRequest) returns (GetGhostModeSettingsForBFFResponse);
+
   // SOS Settings
   rpc GetUserSOSSetting(GetUserSOSSettingRequest) returns (GetUserSOSSettingResponse);
   rpc CreateSOSRequest(CreateSOSRequestRequest) returns (SOSRequest);
@@ -251,4 +254,19 @@ message GetUserSOSSettingRequest {
 message GetUserSOSSettingResponse {
   UserSOSSetting sos_setting = 1;
   repeated SOSRequest sos_requests = 2;
+}
+
+// Ghost Mode Settings for BFF
+message GetGhostModeSettingsForBFFRequest {
+  string bff_account_id = 1;
+}
+
+message GetGhostModeSettingsForBFFResponse {
+  repeated GhostModeSettingInfo settings = 1;
+}
+
+message GhostModeSettingInfo {
+  string account_id = 1;       // Who set the ghost mode
+  string visibility_type = 2;  // blurred/hidden/fixed/precise
+  string expires_at = 3;        // Expiration timestamp
 }
