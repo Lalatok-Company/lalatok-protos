@@ -20,6 +20,9 @@ service SettingService {
   rpc GetNotificationBffSetting(GetNotificationBffSettingRequest) returns (NotificationBffSetting);
   rpc UpdateNotificationBffSetting(UpdateNotificationBffSettingRequest) returns (google.protobuf.Empty);
 
+  // Ghost Mode Settings
+  rpc GetGhostModeSettingsForBFF(GetGhostModeSettingsForBFFRequest) returns (GetGhostModeSettingsForBFFResponse);
+
   // SOS Settings
   rpc GetUserSOSSetting(GetUserSOSSettingRequest) returns (GetUserSOSSettingResponse);
   rpc CreateSOSRequest(CreateSOSRequestRequest) returns (SOSRequest);
@@ -101,6 +104,11 @@ message GhostModeSetting {
   string bff_account_id = 1;
   string duration = 2;
   LocationVisibilityType visibility_type = 3;
+  // Fixed location coordinates (only used when visibility_type = VISIBILITY_TYPE_FIXED)
+  double fixed_lat = 4;
+  double fixed_lng = 5;
+  // Timestamp when the fixed location was set
+  google.protobuf.Timestamp fixed_timestamp = 6;
 }
 
 // Meetup Setting
@@ -160,6 +168,11 @@ message UpdateGhostModeSetting {
   repeated string bff_account_ids = 1;
   string duration = 2;
   LocationVisibilityType visibility_type = 3;
+  // Fixed location coordinates (only used when visibility_type = VISIBILITY_TYPE_FIXED)
+  double fixed_lat = 4;
+  double fixed_lng = 5;
+  // Timestamp when the fixed location was set
+  google.protobuf.Timestamp fixed_timestamp = 6;
 }
 
 // New request message for BlockUser RPC
@@ -251,4 +264,24 @@ message GetUserSOSSettingRequest {
 message GetUserSOSSettingResponse {
   UserSOSSetting sos_setting = 1;
   repeated SOSRequest sos_requests = 2;
+}
+
+// Ghost Mode Settings for BFF
+message GetGhostModeSettingsForBFFRequest {
+  string bff_account_id = 1;
+}
+
+message GetGhostModeSettingsForBFFResponse {
+  repeated GhostModeSettingInfo settings = 1;
+}
+
+message GhostModeSettingInfo {
+  string account_id = 1;       // Who set the ghost mode
+  string visibility_type = 2;  // blurred/hidden/fixed/precise
+  string expires_at = 3;        // Expiration timestamp
+  // Fixed location coordinates (only used when visibility_type = "fixed")
+  double fixed_lat = 4;
+  double fixed_lng = 5;
+  // Timestamp when the fixed location was set
+  google.protobuf.Timestamp fixed_timestamp = 6;
 }
