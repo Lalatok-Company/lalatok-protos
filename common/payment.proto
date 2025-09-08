@@ -114,6 +114,13 @@ message SubscriptionItem {
   bool is_cancelled = 6;
   string environment = 7;
   SubscriptionStatus status = 8;
+  // Renewal information fields
+  int32 auto_renew_status = 9;           // 0 = off, 1 = on
+  google.protobuf.Timestamp next_renewal_date = 10;
+  google.protobuf.Timestamp grace_period_end_date = 11;
+  bool is_in_billing_retry_period = 12;
+  int32 expiration_intent = 13;
+  google.protobuf.Timestamp recent_subscription_date = 14;
 }
 
 message GetUserSubscriptionsResponse {
