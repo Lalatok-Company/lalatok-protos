@@ -18,6 +18,7 @@ message Profile {
   repeated string badges = 8;
   bool is_subscription = 9;
   bool is_adult = 10;
+  bool is_show_subscription_badge = 11;
 }
 
 service ProfileService {
@@ -90,6 +91,7 @@ message UpdateRequest {
   RepeatedStringValue badges = 7;
   google.protobuf.BoolValue is_subscription = 8;
   google.protobuf.BoolValue is_adult = 9;
+  google.protobuf.BoolValue is_show_subscription_badge = 10;
 }
 
 message UpdateResponse {
