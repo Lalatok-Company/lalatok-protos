@@ -43,6 +43,9 @@ service ProfileService {
   rpc SendEmoji(SendEmojiRequest) returns (SendEmojiResponse);
   rpc GetReceivedEmojis(GetReceivedEmojisRequest) returns (GetReceivedEmojisResponse);
   rpc CountUnclaimedEmojis(CountUnclaimedEmojisRequest) returns (CountUnclaimedEmojisResponse);
+  
+  // Subscription management methods
+  rpc GetUsersWithActiveSubscription(GetUsersWithActiveSubscriptionRequest) returns (GetUsersWithActiveSubscriptionResponse);
 }
 
 message CreateRequest {
@@ -201,4 +204,17 @@ message CountUnclaimedEmojisRequest {
 
 message CountUnclaimedEmojisResponse {
   int32 count = 1;
+}
+
+// Subscription management messages
+message GetUsersWithActiveSubscriptionRequest {
+  int32 limit = 1;
+  int32 offset = 2;
+}
+
+message GetUsersWithActiveSubscriptionResponse {
+  repeated Profile profiles = 1;
+  int32 total = 2;
+  int32 limit = 3;
+  int32 offset = 4;
 }
