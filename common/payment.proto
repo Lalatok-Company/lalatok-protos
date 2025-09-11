@@ -43,6 +43,9 @@ service PaymentService {
   // GetUserSubscriptions retrieves the current subscriptions for a user.
   rpc GetUserSubscriptions(GetUserSubscriptionsRequest) returns (GetUserSubscriptionsResponse);
 
+  // GetAllActiveSubscriptions retrieves all currently active subscriptions for expiry checking.
+  rpc GetAllActiveSubscriptions(GetAllActiveSubscriptionsRequest) returns (GetAllActiveSubscriptionsResponse);
+
   // AppleServerNotification is the endpoint for Apple App Store server-to-server notifications.
   rpc AppleServerNotification(AppleServerNotificationRequest) returns (AppleServerNotificationResponse);
 
@@ -153,4 +156,13 @@ message GoogleServerNotificationRequest {
 
 message GoogleServerNotificationResponse {
     bool success = 1;
+}
+
+// --- GetAllActiveSubscriptions ---
+message GetAllActiveSubscriptionsRequest {
+  // Empty request - returns all active subscriptions
+}
+
+message GetAllActiveSubscriptionsResponse {
+  repeated SubscriptionItem subscriptions = 1;
 } 
