@@ -1,6 +1,7 @@
 syntax = "proto3";
 import "google/protobuf/empty.proto";
 import "google/protobuf/wrappers.proto";
+import "google/protobuf/timestamp.proto";
 
 package profile;
 
@@ -46,6 +47,12 @@ service ProfileService {
   
   // Subscription management methods
   rpc GetUsersWithActiveSubscription(GetUsersWithActiveSubscriptionRequest) returns (GetUsersWithActiveSubscriptionResponse);
+
+  // Referral management methods
+  rpc SaveReferralClick(SaveReferralClickRequest) returns (SaveReferralClickResponse);
+  rpc ValidateReferralMatch(ValidateReferralMatchRequest) returns (ValidateReferralMatchResponse);
+  rpc GetReferralStats(GetReferralStatsRequest) returns (GetReferralStatsResponse);
+  rpc GetUserReferrals(GetUserReferralsRequest) returns (GetUserReferralsResponse);
 }
 
 message CreateRequest {
@@ -56,6 +63,7 @@ message CreateRequest {
   string birth_day = 5;
   string mood = 6;
   bool is_adult = 7;
+  string ref_account_id = 8; // Referral account ID
 }
 
 message CreateResponse {
@@ -217,4 +225,84 @@ message GetUsersWithActiveSubscriptionResponse {
   int32 total = 2;
   int32 limit = 3;
   int32 offset = 4;
+}
+
+// Referral management messages
+message SaveReferralClickRequest {
+  string ref_code = 1;
+  string click_timestamp = 2;
+  string ip_address = 3;
+  string user_agent = 4;
+  string language = 5;
+  string timezone = 6;
+  ScreenInfo screen = 7;
+}
+
+message SaveReferralClickResponse {
+  bool success = 1;
+  string tracking_id = 2;
+}
+
+message ValidateReferralMatchRequest {
+  string ref_code = 1;
+  string install_timestamp = 2;
+  string ip_address = 3;
+  string os = 4;
+  string os_version = 5;
+  string device = 6;
+  string bundle_id = 7;
+  string idfv = 8;
+  string language = 9;
+  string timezone = 10;
+  ScreenInfo screen = 11;
+}
+
+message ValidateReferralMatchResponse {
+  bool is_match = 1;
+  float match_score = 2;
+  string referrer_account_id = 3;
+  string breakdown = 4;
+}
+
+message GetReferralStatsRequest {
+  string account_id = 1;
+}
+
+message GetReferralStatsResponse {
+  int32 total_referrals = 1;
+  int32 successful_referrals = 2;
+  int32 pending_referrals = 3;
+  repeated ReferralBreakdown monthly_stats = 4;
+}
+
+message GetUserReferralsRequest {
+  string account_id = 1;
+  int32 limit = 2;
+  int32 offset = 3;
+  string status = 4;
+}
+
+message GetUserReferralsResponse {
+  repeated ReferredUser users = 1;
+  int32 total = 2;
+}
+
+message ScreenInfo {
+  int32 width = 1;
+  int32 height = 2;
+  float dpr = 3;
+}
+
+message ReferralBreakdown {
+  string month = 1;
+  int32 count = 2;
+}
+
+message ReferredUser {
+  string account_id = 1;
+  string username = 2;
+  string avatar_url = 3;
+  string status = 4;
+  google.protobuf.Timestamp referred_at = 5;
+  float match_score = 6;
 }
