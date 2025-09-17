@@ -56,6 +56,49 @@ service ProfileService {
   rpc GetUserReferrals(GetUserReferralsRequest) returns (GetUserReferralsResponse);
 }
 
+// Admin service for user management
+service AdminService {
+  // Get all users with pagination and filters
+  rpc GetAllUsers(GetAllUsersRequest) returns (GetAllUsersResponse);
+}
+
+message GetAllUsersRequest {
+  int32 page = 1;
+  int32 limit = 2;
+  string search_username = 3;
+  string search_phone = 4;
+  bool filter_subscription = 5;
+  bool filter_adult = 6;
+  string sort_by = 7; // created_at, updated_at, username
+  string sort_order = 8; // asc, desc
+}
+
+message GetAllUsersResponse {
+  repeated UserInfo users = 1;
+  int32 total = 2;
+  int32 page = 3;
+  int32 limit = 4;
+  int32 total_pages = 5;
+}
+
+message UserInfo {
+  string id = 1;
+  string account_id = 2;
+  string username = 3;
+  string avatar_url = 4;
+  string gender = 5;
+  string birth_day = 6;
+  string mood = 7;
+  repeated string badges = 8;
+  bool is_subscription = 9;
+  bool is_adult = 10;
+  bool is_show_subscription_badge = 11;
+  string phone = 12;
+  string created_at = 13;
+  string updated_at = 14;
+  bool is_active = 15;
+}
+
 message CreateRequest {
   string account_id = 1;
   string username = 2;
