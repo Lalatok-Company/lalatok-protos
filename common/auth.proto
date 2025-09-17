@@ -22,6 +22,7 @@ service AuthService {
     rpc GetAccountsByPhone (GetAccountsByPhoneRequest) returns (GetAccountsByPhoneResponse);
     rpc DeleteAccount (DeleteAccountRequest) returns (DeleteAccountResponse);
     rpc GetMyAccount (GetMyAccountRequest) returns (GetMyAccountResponse);
+    rpc LoginAdmin (LoginAdminRequest) returns (LoginAdminResponse);
 }
 
 // Login request and response
@@ -111,4 +112,18 @@ message GetMyAccountRequest {
 message GetMyAccountResponse {
     string id = 1;
     string phone = 2;
+}
+
+// Admin login request and response
+message LoginAdminRequest {
+    string username = 1;
+    string password = 2;
+}
+
+message LoginAdminResponse {
+    string access_token = 1;
+    string ws_token = 2;
+    string refresh_token = 3;
+    int32 expires_in = 4;
+    string role = 5;
 }
