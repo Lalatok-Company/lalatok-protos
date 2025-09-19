@@ -71,6 +71,8 @@ message GetAllUsersRequest {
   bool filter_adult = 6;
   string sort_by = 7; // created_at, updated_at, username
   string sort_order = 8; // asc, desc
+  string start_date = 9; // ISO format date string YYYY-MM-DD
+  string end_date = 10; // ISO format date string YYYY-MM-DD
 }
 
 message GetAllUsersResponse {
@@ -93,10 +95,12 @@ message UserInfo {
   bool is_subscription = 9;
   bool is_adult = 10;
   bool is_show_subscription_badge = 11;
-  string phone = 12;
-  string created_at = 13;
-  string updated_at = 14;
-  bool is_active = 15;
+  string created_at = 12;
+  string updated_at = 13;
+  bool is_active = 14;
+  string subscription_status = 15;
+  string subscription_plan = 16;
+  string subscription_end_date = 17;
 }
 
 message CreateRequest {
