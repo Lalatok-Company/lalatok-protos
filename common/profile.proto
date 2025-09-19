@@ -64,6 +64,8 @@ service AdminService {
   rpc GetUserDetail(GetUserDetailRequest) returns (GetUserDetailResponse);
   // Get referral information for a specific user
   rpc GetUserReferrals(GetUserReferralsAdminRequest) returns (GetUserReferralsAdminResponse);
+  // Update user profile by admin
+  rpc UpdateUser(UpdateUserAdminRequest) returns (UpdateUserAdminResponse);
 }
 
 message GetAllUsersRequest {
@@ -473,4 +475,22 @@ message PaginationInfo {
   int32 limit = 2;
   int32 total = 3;
   int32 total_pages = 4;
+}
+
+// Admin update user messages
+message UpdateUserAdminRequest {
+  string account_id = 1;
+  google.protobuf.StringValue username = 2;
+  google.protobuf.StringValue avatar_url = 3;
+  google.protobuf.StringValue gender = 4;
+  google.protobuf.StringValue birth_day = 5;
+  google.protobuf.StringValue mood = 6;
+  RepeatedStringValue badges = 7;
+  google.protobuf.BoolValue is_subscription = 8;
+  google.protobuf.BoolValue is_adult = 9;
+  google.protobuf.BoolValue is_show_subscription_badge = 10;
+}
+
+message UpdateUserAdminResponse {
+  UserDetail user = 1;
 }
