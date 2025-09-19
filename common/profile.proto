@@ -60,6 +60,10 @@ service ProfileService {
 service AdminService {
   // Get all users with pagination and filters
   rpc GetAllUsers(GetAllUsersRequest) returns (GetAllUsersResponse);
+  // Get detailed information about a specific user
+  rpc GetUserDetail(GetUserDetailRequest) returns (GetUserDetailResponse);
+  // Get referral information for a specific user
+  rpc GetUserReferrals(GetUserReferralsAdminRequest) returns (GetUserReferralsAdminResponse);
 }
 
 message GetAllUsersRequest {
@@ -71,6 +75,8 @@ message GetAllUsersRequest {
   bool filter_adult = 6;
   string sort_by = 7; // created_at, updated_at, username
   string sort_order = 8; // asc, desc
+  string start_date = 9; // ISO format date string YYYY-MM-DD
+  string end_date = 10; // ISO format date string YYYY-MM-DD
 }
 
 message GetAllUsersResponse {
@@ -93,10 +99,25 @@ message UserInfo {
   bool is_subscription = 9;
   bool is_adult = 10;
   bool is_show_subscription_badge = 11;
-  string phone = 12;
-  string created_at = 13;
-  string updated_at = 14;
-  bool is_active = 15;
+  string created_at = 12;
+  string updated_at = 13;
+  bool is_active = 14;
+  string subscription_status = 15;
+  string subscription_plan = 16;
+  string subscription_end_date = 17;
+  ReferralInfo referral = 18;
+}
+
+message ReferralInfo {
+  string referrer_account_id = 1;
+  string referrer_username = 2;
+  string referrer_avatar_url = 3;
+  string referred_at = 4;
+  string status = 5;
+  double match_score = 6;
+  int32 total_referrals = 7;
+  int32 successful_referrals = 8;
+  int32 pending_referrals = 9;
 }
 
 message CreateRequest {
@@ -370,4 +391,86 @@ message ReferredUser {
   string status = 4;
   google.protobuf.Timestamp referred_at = 5;
   float match_score = 6;
+}
+
+// Admin API messages
+message GetUserDetailRequest {
+  string account_id = 1;
+}
+
+message GetUserDetailResponse {
+  UserDetail user = 1;
+}
+
+message UserDetail {
+  string id = 1;
+  string account_id = 2;
+  string username = 3;
+  string avatar_url = 4;
+  string gender = 5;
+  string birth_day = 6;
+  string mood = 7;
+  repeated string badges = 8;
+  bool is_subscription = 9;
+  bool is_adult = 10;
+  bool is_show_subscription_badge = 11;
+  string created_at = 12;
+  string updated_at = 13;
+  bool is_active = 14;
+  string subscription_status = 15;
+  string subscription_plan = 16;
+  string subscription_end_date = 17;
+  ReferrerInfo referred_by = 18;
+  ReferralStats referral_stats = 19;
+}
+
+message ReferrerInfo {
+  string referrer_account_id = 1;
+  string referrer_username = 2;
+  string referrer_avatar_url = 3;
+  string referred_at = 4;
+  string status = 5;
+  double match_score = 6;
+}
+
+message ReferralStats {
+  int32 total_referrals = 1;
+  int32 successful_referrals = 2;
+  int32 pending_referrals = 3;
+  repeated MonthlyReferralStat monthly_stats = 4;
+}
+
+message MonthlyReferralStat {
+  string month = 1;
+  int32 count = 2;
+}
+
+message GetUserReferralsAdminRequest {
+  string account_id = 1;
+  int32 page = 2;
+  int32 limit = 3;
+  string status = 4;
+}
+
+message GetUserReferralsAdminResponse {
+  ReferrerInfo referred_by = 1;
+  repeated ReferredUserDetail referred_users = 2;
+  ReferralStats stats = 3;
+  PaginationInfo pagination = 4;
+}
+
+message ReferredUserDetail {
+  string account_id = 1;
+  string username = 2;
+  string avatar_url = 3;
+  string status = 4;
+  string referred_at = 5;
+  double match_score = 6;
+}
+
+message PaginationInfo {
+  int32 page = 1;
+  int32 limit = 2;
+  int32 total = 3;
+  int32 total_pages = 4;
 }
