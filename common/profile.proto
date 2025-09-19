@@ -54,6 +54,8 @@ service ProfileService {
   rpc FindReferralMatch(FindReferralMatchRequest) returns (FindReferralMatchResponse);
   rpc GetReferralStats(GetReferralStatsRequest) returns (GetReferralStatsResponse);
   rpc GetUserReferrals(GetUserReferralsRequest) returns (GetUserReferralsResponse);
+  // Get all referrals in the system (public version with limited access)
+  rpc GetAllReferrals(GetAllReferralsRequest) returns (GetAllReferralsResponse);
 }
 
 // Admin service for user management
@@ -67,7 +69,7 @@ service AdminService {
   // Update user profile by admin
   rpc UpdateUser(UpdateUserAdminRequest) returns (UpdateUserAdminResponse);
   // Get all referrals in the system with filters
-  rpc GetAllReferrals(GetAllReferralsRequest) returns (GetAllReferralsResponse);
+  rpc GetAllReferrals(GetAllReferralsRequest) returns (GetAllReferralsAdminResponse);
 }
 
 message GetAllUsersRequest {
@@ -110,6 +112,26 @@ message UserInfo {
   string subscription_plan = 16;
   string subscription_end_date = 17;
   ReferralInfo referral = 18;
+}
+
+message ProfileWithAccount {
+  string id = 1;
+  string account_id = 2;
+  string username = 3;
+  string avatar_url = 4;
+  string gender = 5;
+  string birth_day = 6;
+  string mood = 7;
+  repeated string badges = 8;
+  bool is_subscription = 9;
+  bool is_adult = 10;
+  bool is_show_subscription_badge = 11;
+  string created_at = 12;
+  string updated_at = 13;
+  bool is_active = 14;
+  string subscription_status = 15;
+  string subscription_plan = 16;
+  string subscription_end_date = 17;
 }
 
 message ReferralInfo {
@@ -457,11 +479,12 @@ message GetUserReferralsAdminRequest {
 }
 
 message GetUserReferralsAdminResponse {
-  ReferrerInfo referred_by = 1;
-  repeated ReferredUserDetail referred_users = 2;
-  ReferralStats stats = 3;
-  PaginationInfo pagination = 4;
+  repeated ReferredUser users = 1;
+  int32 total = 2;
+  int32 page = 3;
+  int32 limit = 4;
 }
+
 
 message ReferredUserDetail {
   string account_id = 1;
@@ -511,11 +534,26 @@ message GetAllReferralsRequest {
 }
 
 message GetAllReferralsResponse {
+  repeated ReferralLeaderboardEntry leaderboard = 1;
+  int32 total = 2;
+  int32 page = 3;
+  int32 limit = 4;
+  int32 total_pages = 5;
+}
+
+message GetAllReferralsAdminResponse {
   repeated ReferralDetail referrals = 1;
   int32 total = 2;
   int32 page = 3;
   int32 limit = 4;
   int32 total_pages = 5;
+}
+
+message ReferralLeaderboardEntry {
+  int32 rank = 1;
+  ReferrerInfo referrer = 2;
+  int32 total_referrals = 3;
+  int32 successful_referrals = 4;
 }
 
 message ReferralDetail {
