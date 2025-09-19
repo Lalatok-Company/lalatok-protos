@@ -101,6 +101,19 @@ message UserInfo {
   string subscription_status = 15;
   string subscription_plan = 16;
   string subscription_end_date = 17;
+  ReferralInfo referral = 18;
+}
+
+message ReferralInfo {
+  string referrer_account_id = 1;
+  string referrer_username = 2;
+  string referrer_avatar_url = 3;
+  string referred_at = 4;
+  string status = 5;
+  double match_score = 6;
+  int32 total_referrals = 7;
+  int32 successful_referrals = 8;
+  int32 pending_referrals = 9;
 }
 
 message CreateRequest {
