@@ -77,12 +77,13 @@ message GetAllUsersRequest {
   int32 limit = 2;
   string search_username = 3;
   string search_phone = 4;
-  bool filter_subscription = 5;
+  bool isSubscription = 5;
   bool filter_adult = 6;
   string sort_by = 7; // created_at, updated_at, username
   string sort_order = 8; // asc, desc
   string start_date = 9; // ISO format date string YYYY-MM-DD
   string end_date = 10; // ISO format date string YYYY-MM-DD
+  string gender = 11; // male, female, other
 }
 
 message GetAllUsersResponse {
