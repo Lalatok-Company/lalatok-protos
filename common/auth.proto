@@ -20,6 +20,7 @@ service AuthService {
     rpc ValidateToken (ValidateTokenRequest) returns (ValidateTokenResponse);
     rpc CheckPhoneExists (CheckPhoneExistsRequest) returns (CheckPhoneExistsResponse);
     rpc GetAccountsByPhone (GetAccountsByPhoneRequest) returns (GetAccountsByPhoneResponse);
+    rpc GetAccountsByIds (GetAccountsByIdsRequest) returns (GetAccountsByIdsResponse);
     rpc DeleteAccount (DeleteAccountRequest) returns (DeleteAccountResponse);
     rpc GetMyAccount (GetMyAccountRequest) returns (GetMyAccountResponse);
     rpc LoginAdmin (LoginAdminRequest) returns (LoginAdminResponse);
@@ -94,6 +95,15 @@ message GetAccountsByPhoneRequest {
 }
 
 message GetAccountsByPhoneResponse {
+    repeated Account accounts = 1;
+}
+
+// Get accounts by IDs request and response
+message GetAccountsByIdsRequest {
+    repeated string account_ids = 1;
+}
+
+message GetAccountsByIdsResponse {
     repeated Account accounts = 1;
 }
 
