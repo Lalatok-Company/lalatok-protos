@@ -66,6 +66,8 @@ service AdminService {
   rpc GetUserReferrals(GetUserReferralsAdminRequest) returns (GetUserReferralsAdminResponse);
   // Update user profile by admin
   rpc UpdateUser(UpdateUserAdminRequest) returns (UpdateUserAdminResponse);
+  // Get all referrals in the system with filters
+  rpc GetAllReferrals(GetAllReferralsRequest) returns (GetAllReferralsResponse);
 }
 
 message GetAllUsersRequest {
@@ -493,4 +495,35 @@ message UpdateUserAdminRequest {
 
 message UpdateUserAdminResponse {
   UserDetail user = 1;
+}
+
+// Admin get all referrals messages
+message GetAllReferralsRequest {
+  int32 page = 1;
+  int32 limit = 2;
+  string status = 3; // pending, matched, completed, expired
+  string start_date = 4; // YYYY-MM-DD
+  string end_date = 5; // YYYY-MM-DD
+  string sort_by = 6; // created_at, referred_at, match_score
+  string sort_order = 7; // asc, desc
+  string search_referrer = 8; // search by referrer username
+  string search_referred = 9; // search by referred username
+}
+
+message GetAllReferralsResponse {
+  repeated ReferralDetail referrals = 1;
+  int32 total = 2;
+  int32 page = 3;
+  int32 limit = 4;
+  int32 total_pages = 5;
+}
+
+message ReferralDetail {
+  string id = 1;
+  ReferrerInfo referrer = 2;
+  ReferredUserDetail referred_user = 3;
+  string status = 4;
+  double match_score = 5;
+  string created_at = 6;
+  string referred_at = 7;
 }
