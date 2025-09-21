@@ -532,6 +532,7 @@ message GetAllReferralsRequest {
   string sort_order = 7; // asc, desc
   string search_referrer = 8; // search by referrer username
   string search_referred = 9; // search by referred username
+  repeated string search_user_ids = 10; // search by multiple user account IDs
 }
 
 message GetAllReferralsResponse {
