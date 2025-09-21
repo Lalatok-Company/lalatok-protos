@@ -17,6 +17,7 @@ service SettingService {
   rpc CreateReport(CreateReportRequest) returns (CreateReportResponse);
   rpc GetAllReports(GetAllReportsRequest) returns (GetAllReportsResponse);
   rpc GetReportById(GetReportByIdRequest) returns (GetReportByIdResponse);
+  rpc DeleteReport(DeleteReportRequest) returns (google.protobuf.Empty);
 
   // BFF Notification Settings
   rpc GetNotificationBffSetting(GetNotificationBffSettingRequest) returns (NotificationBffSetting);
@@ -239,6 +240,11 @@ message GetReportByIdRequest {
 
 message GetReportByIdResponse {
   Report report = 1;
+}
+
+// Delete report request
+message DeleteReportRequest {
+  string report_id = 1;
 }
 
 // SOS Setting
