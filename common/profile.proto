@@ -1,6 +1,7 @@
 syntax = "proto3";
 import "google/protobuf/empty.proto";
 import "google/protobuf/wrappers.proto";
+import "google/protobuf/timestamp.proto";
 
 package profile;
 
@@ -46,6 +47,104 @@ service ProfileService {
   
   // Subscription management methods
   rpc GetUsersWithActiveSubscription(GetUsersWithActiveSubscriptionRequest) returns (GetUsersWithActiveSubscriptionResponse);
+
+  // Referral management methods
+  rpc SaveReferralClick(SaveReferralClickRequest) returns (SaveReferralClickResponse);
+  rpc ValidateReferralMatch(ValidateReferralMatchRequest) returns (ValidateReferralMatchResponse);
+  rpc FindReferralMatch(FindReferralMatchRequest) returns (FindReferralMatchResponse);
+  rpc GetReferralStats(GetReferralStatsRequest) returns (GetReferralStatsResponse);
+  rpc GetUserReferrals(GetUserReferralsRequest) returns (GetUserReferralsResponse);
+  // Get all referrals in the system (public version with limited access)
+  rpc GetAllReferrals(GetAllReferralsRequest) returns (GetAllReferralsResponse);
+}
+
+// Admin service for user management
+service AdminService {
+  // Get all users with pagination and filters
+  rpc GetAllUsers(GetAllUsersRequest) returns (GetAllUsersResponse);
+  // Get detailed information about a specific user
+  rpc GetUserDetail(GetUserDetailRequest) returns (GetUserDetailResponse);
+  // Get referral information for a specific user
+  rpc GetUserReferrals(GetUserReferralsAdminRequest) returns (GetUserReferralsAdminResponse);
+  // Update user profile by admin
+  rpc UpdateUser(UpdateUserAdminRequest) returns (UpdateUserAdminResponse);
+  // Get all referrals in the system with filters
+  rpc GetAllReferrals(GetAllReferralsRequest) returns (GetAllReferralsAdminResponse);
+}
+
+message GetAllUsersRequest {
+  int32 page = 1;
+  int32 limit = 2;
+  string search_username = 3;
+  string search_phone = 4;
+  bool isSubscription = 5;
+  bool filter_adult = 6;
+  string sort_by = 7; // created_at, updated_at, username
+  string sort_order = 8; // asc, desc
+  string start_date = 9; // ISO format date string YYYY-MM-DD
+  string end_date = 10; // ISO format date string YYYY-MM-DD
+  string gender = 11; // male, female, other
+}
+
+message GetAllUsersResponse {
+  repeated UserInfo users = 1;
+  int32 total = 2;
+  int32 page = 3;
+  int32 limit = 4;
+  int32 total_pages = 5;
+}
+
+message UserInfo {
+  string id = 1;
+  string account_id = 2;
+  string username = 3;
+  string avatar_url = 4;
+  string gender = 5;
+  string birth_day = 6;
+  string mood = 7;
+  repeated string badges = 8;
+  bool is_subscription = 9;
+  bool is_adult = 10;
+  bool is_show_subscription_badge = 11;
+  string created_at = 12;
+  string updated_at = 13;
+  bool is_active = 14;
+  string subscription_status = 15;
+  string subscription_plan = 16;
+  string subscription_end_date = 17;
+  ReferralInfo referral = 18;
+}
+
+message ProfileWithAccount {
+  string id = 1;
+  string account_id = 2;
+  string username = 3;
+  string avatar_url = 4;
+  string gender = 5;
+  string birth_day = 6;
+  string mood = 7;
+  repeated string badges = 8;
+  bool is_subscription = 9;
+  bool is_adult = 10;
+  bool is_show_subscription_badge = 11;
+  string created_at = 12;
+  string updated_at = 13;
+  bool is_active = 14;
+  string subscription_status = 15;
+  string subscription_plan = 16;
+  string subscription_end_date = 17;
+}
+
+message ReferralInfo {
+  string referrer_account_id = 1;
+  string referrer_username = 2;
+  string referrer_avatar_url = 3;
+  string referred_at = 4;
+  string status = 5;
+  double match_score = 6;
+  int32 total_referrals = 7;
+  int32 successful_referrals = 8;
+  int32 pending_referrals = 9;
 }
 
 message CreateRequest {
@@ -56,6 +155,7 @@ message CreateRequest {
   string birth_day = 5;
   string mood = 6;
   bool is_adult = 7;
+  string ref_account_id = 8; // Referral account ID
 }
 
 message CreateResponse {
@@ -217,4 +317,253 @@ message GetUsersWithActiveSubscriptionResponse {
   int32 total = 2;
   int32 limit = 3;
   int32 offset = 4;
+}
+
+// Referral management messages
+message SaveReferralClickRequest {
+  string ref_code = 1;
+  string click_timestamp = 2;
+  string ip_address = 3;
+  string user_agent = 4;
+  string language = 5;
+  string timezone = 6;
+  ScreenInfo screen = 7;
+}
+
+message SaveReferralClickResponse {
+  bool success = 1;
+  string tracking_id = 2;
+}
+
+message ValidateReferralMatchRequest {
+  string ref_code = 1;
+  string install_timestamp = 2;
+  string ip_address = 3;
+  string os = 4;
+  string os_version = 5;
+  string device = 6;
+  string bundle_id = 7;
+  string idfv = 8;
+  string language = 9;
+  string timezone = 10;
+  ScreenInfo screen = 11;
+}
+
+message ValidateReferralMatchResponse {
+  bool is_match = 1;
+  float match_score = 2;
+  string referrer_account_id = 3;
+  string breakdown = 4;
+}
+
+message FindReferralMatchRequest {
+  string install_timestamp = 1;
+  string ip_address = 2;
+  string os = 3;
+  string os_version = 4;
+  string device = 5;
+  string bundle_id = 6;
+  string idfv = 7;
+  string language = 8;
+  string timezone = 9;
+  ScreenInfo screen = 10;
+}
+
+message FindReferralMatchResponse {
+  bool is_match = 1;
+  float match_score = 2;
+  string ref_code = 3;
+  string referrer_account_id = 4;
+  string breakdown = 5;
+}
+
+message GetReferralStatsRequest {
+  string account_id = 1;
+}
+
+message GetReferralStatsResponse {
+  int32 total_referrals = 1;
+  int32 successful_referrals = 2;
+  int32 pending_referrals = 3;
+  repeated ReferralBreakdown monthly_stats = 4;
+}
+
+message GetUserReferralsRequest {
+  string account_id = 1;
+  int32 limit = 2;
+  int32 offset = 3;
+  string status = 4;
+}
+
+message GetUserReferralsResponse {
+  repeated ReferredUser users = 1;
+  int32 total = 2;
+}
+
+message ScreenInfo {
+  int32 width = 1;
+  int32 height = 2;
+  float dpr = 3;
+}
+
+message ReferralBreakdown {
+  string month = 1;
+  int32 count = 2;
+}
+
+message ReferredUser {
+  string account_id = 1;
+  string username = 2;
+  string avatar_url = 3;
+  string status = 4;
+  google.protobuf.Timestamp referred_at = 5;
+  float match_score = 6;
+}
+
+// Admin API messages
+message GetUserDetailRequest {
+  string account_id = 1;
+}
+
+message GetUserDetailResponse {
+  UserDetail user = 1;
+}
+
+message UserDetail {
+  string id = 1;
+  string account_id = 2;
+  string username = 3;
+  string avatar_url = 4;
+  string gender = 5;
+  string birth_day = 6;
+  string mood = 7;
+  repeated string badges = 8;
+  bool is_subscription = 9;
+  bool is_adult = 10;
+  bool is_show_subscription_badge = 11;
+  string created_at = 12;
+  string updated_at = 13;
+  bool is_active = 14;
+  string subscription_status = 15;
+  string subscription_plan = 16;
+  string subscription_end_date = 17;
+  ReferrerInfo referred_by = 18;
+  ReferralStats referral_stats = 19;
+}
+
+message ReferrerInfo {
+  string referrer_account_id = 1;
+  string referrer_username = 2;
+  string referrer_avatar_url = 3;
+  string referred_at = 4;
+  string status = 5;
+  double match_score = 6;
+}
+
+message ReferralStats {
+  int32 total_referrals = 1;
+  int32 successful_referrals = 2;
+  int32 pending_referrals = 3;
+  repeated MonthlyReferralStat monthly_stats = 4;
+}
+
+message MonthlyReferralStat {
+  string month = 1;
+  int32 count = 2;
+}
+
+message GetUserReferralsAdminRequest {
+  string account_id = 1;
+  int32 page = 2;
+  int32 limit = 3;
+  string status = 4;
+}
+
+message GetUserReferralsAdminResponse {
+  repeated UserInfo users = 1;
+  int32 total = 2;
+  int32 page = 3;
+  int32 limit = 4;
+}
+
+
+message ReferredUserDetail {
+  string account_id = 1;
+  string username = 2;
+  string avatar_url = 3;
+  string status = 4;
+  string referred_at = 5;
+  double match_score = 6;
+}
+
+message PaginationInfo {
+  int32 page = 1;
+  int32 limit = 2;
+  int32 total = 3;
+  int32 total_pages = 4;
+}
+
+// Admin update user messages
+message UpdateUserAdminRequest {
+  string account_id = 1;
+  google.protobuf.StringValue username = 2;
+  google.protobuf.StringValue avatar_url = 3;
+  google.protobuf.StringValue gender = 4;
+  google.protobuf.StringValue birth_day = 5;
+  google.protobuf.StringValue mood = 6;
+  RepeatedStringValue badges = 7;
+  google.protobuf.BoolValue is_subscription = 8;
+  google.protobuf.BoolValue is_adult = 9;
+  google.protobuf.BoolValue is_show_subscription_badge = 10;
+}
+
+message UpdateUserAdminResponse {
+  UserDetail user = 1;
+}
+
+// Admin get all referrals messages
+message GetAllReferralsRequest {
+  int32 page = 1;
+  int32 limit = 2;
+  string status = 3; // pending, matched, completed, expired
+  string start_date = 4; // YYYY-MM-DD
+  string end_date = 5; // YYYY-MM-DD
+  string sort_by = 6; // created_at, referred_at, match_score
+  string sort_order = 7; // asc, desc
+  string search_referrer = 8; // search by referrer username
+  string search_referred = 9; // search by referred username
+  repeated string search_user_ids = 10; // search by multiple user account IDs
+}
+
+message GetAllReferralsResponse {
+  repeated ReferralLeaderboardEntry leaderboard = 1;
+  int32 total = 2;
+  int32 page = 3;
+  int32 limit = 4;
+  int32 total_pages = 5;
+}
+
+message GetAllReferralsAdminResponse {
+  repeated ReferralDetail referrals = 1;
+  int32 total = 2;
+  int32 page = 3;
+  int32 limit = 4;
+  int32 total_pages = 5;
+}
+
+message ReferralLeaderboardEntry {
+  int32 rank = 1;
+  UserInfo referrer = 2;  // Changed from ReferrerInfo to UserInfo to match admin/users structure
+  int32 total_referrals = 3;
+  int32 successful_referrals = 4;
+}
+
+message ReferralDetail {
+  string id = 1;
+  ReferrerInfo referrer = 2;
+  ReferredUserDetail referred_user = 3;
+  string status = 4;
+  double match_score = 5;
+  string created_at = 6;
+  string referred_at = 7;
 }

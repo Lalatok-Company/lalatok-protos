@@ -79,7 +79,7 @@ message SearchPlacesRequest {
 
 message PlaceSearchResult {
     string name = 1;
-    string name_en = 2;
+    int64 osm_id = 2;
     string amenity = 3;
     string address = 4;
     double distance_meters = 5;

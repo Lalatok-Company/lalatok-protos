@@ -15,7 +15,11 @@ service SettingService {
   rpc BlockUser(BlockUserRequest) returns (google.protobuf.Empty);
   rpc UnblockUser(UnblockUserRequest) returns (google.protobuf.Empty);
   rpc CreateReport(CreateReportRequest) returns (CreateReportResponse);
-  
+  rpc GetAllReports(GetAllReportsRequest) returns (GetAllReportsResponse);
+  rpc GetReportById(GetReportByIdRequest) returns (GetReportByIdResponse);
+  rpc DeleteReport(DeleteReportRequest) returns (google.protobuf.Empty);
+  rpc UpdateReport(UpdateReportRequest) returns (google.protobuf.Empty);
+
   // BFF Notification Settings
   rpc GetNotificationBffSetting(GetNotificationBffSettingRequest) returns (NotificationBffSetting);
   rpc UpdateNotificationBffSetting(UpdateNotificationBffSettingRequest) returns (google.protobuf.Empty);
@@ -196,6 +200,8 @@ message Report {
   google.protobuf.Timestamp created_at = 5;
   google.protobuf.Timestamp updated_at = 6;
   string reported_account_id = 7;
+  string status = 8;
+  string note = 9;
 }
 
 message CreateReportRequest {
@@ -207,6 +213,49 @@ message CreateReportRequest {
 
 message CreateReportResponse {
   Report report = 1;
+}
+
+// Get all reports request and response
+message GetAllReportsRequest {
+  int32 page = 1;
+  int32 limit = 2;
+  string report_type = 3;
+  string start_date = 4;
+  string end_date = 5;
+  string sort_by = 6;
+  string sort_order = 7;
+  string search_reporter = 8;
+  string search_reported = 9;
+  string status = 10;
+}
+
+message GetAllReportsResponse {
+  repeated Report reports = 1;
+  int32 total = 2;
+  int32 page = 3;
+  int32 limit = 4;
+  int32 total_pages = 5;
+}
+
+// Get report by ID request and response
+message GetReportByIdRequest {
+  string report_id = 1;
+}
+
+message GetReportByIdResponse {
+  Report report = 1;
+}
+
+// Delete report request
+message DeleteReportRequest {
+  string report_id = 1;
+}
+
+// Update report request
+message UpdateReportRequest {
+  string report_id = 1;
+  string status = 2;
+  string note = 3;
 }
 
 // SOS Setting

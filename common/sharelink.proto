@@ -9,9 +9,12 @@ option go_package = "sharelinkpb/";
 service ShareLinkService {
   // Create a share link
   rpc CreateShareLink(CreateShareLinkRequest) returns (CreateShareLinkResponse);
-  
+
   // Get share link by short code
   rpc GetShareLink(GetShareLinkRequest) returns (GetShareLinkResponse);
+
+  // Get share links by account ID and share type
+  rpc GetShareLinkByAccount(GetShareLinkByAccountRequest) returns (GetShareLinkByAccountResponse);
 }
 
 enum ShareType {
@@ -64,4 +67,13 @@ message GetShareLinkRequest {
 message GetShareLinkResponse {
   ShareLink share_link = 1;
   string redirect_url = 2;
+}
+
+message GetShareLinkByAccountRequest {
+  string account_id = 1;
+  ShareType share_type = 2;
+}
+
+message GetShareLinkByAccountResponse {
+  repeated ShareLink share_links = 1;
 }
