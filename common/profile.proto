@@ -480,7 +480,7 @@ message GetUserReferralsAdminRequest {
 }
 
 message GetUserReferralsAdminResponse {
-  repeated ReferredUser users = 1;
+  repeated UserInfo users = 1;
   int32 total = 2;
   int32 page = 3;
   int32 limit = 4;
@@ -553,7 +553,7 @@ message GetAllReferralsAdminResponse {
 
 message ReferralLeaderboardEntry {
   int32 rank = 1;
-  ReferrerInfo referrer = 2;
+  UserInfo referrer = 2;  // Changed from ReferrerInfo to UserInfo to match admin/users structure
   int32 total_referrals = 3;
   int32 successful_referrals = 4;
 }
