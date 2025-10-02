@@ -87,7 +87,7 @@ message GetAllUsersRequest {
   string start_date = 9; // ISO format date string YYYY-MM-DD
   string end_date = 10; // ISO format date string YYYY-MM-DD
   string gender = 11; // male, female, other
-  string search_country = 12; // Country code filter (e.g., "VN", "US")
+  repeated string search_countries = 12; // Country codes filter (e.g., ["VN", "US", "KO"])
 }
 
 message GetAllUsersResponse {
