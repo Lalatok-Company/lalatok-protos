@@ -20,6 +20,7 @@ message Profile {
   bool is_subscription = 9;
   bool is_adult = 10;
   bool is_show_subscription_badge = 11;
+  string country = 12;
 }
 
 service ProfileService {
@@ -70,6 +71,8 @@ service AdminService {
   rpc UpdateUser(UpdateUserAdminRequest) returns (UpdateUserAdminResponse);
   // Get all referrals in the system with filters
   rpc GetAllReferrals(GetAllReferralsRequest) returns (GetAllReferralsAdminResponse);
+  // Get list of available countries in the system
+  rpc GetAvailableCountries(google.protobuf.Empty) returns (GetAvailableCountriesResponse);
 }
 
 message GetAllUsersRequest {
@@ -84,6 +87,7 @@ message GetAllUsersRequest {
   string start_date = 9; // ISO format date string YYYY-MM-DD
   string end_date = 10; // ISO format date string YYYY-MM-DD
   string gender = 11; // male, female, other
+  repeated string search_countries = 12; // Country codes filter (e.g., ["VN", "US", "KO"])
 }
 
 message GetAllUsersResponse {
@@ -113,6 +117,7 @@ message UserInfo {
   string subscription_plan = 16;
   string subscription_end_date = 17;
   ReferralInfo referral = 18;
+  string country = 19;
 }
 
 message ProfileWithAccount {
@@ -133,6 +138,7 @@ message ProfileWithAccount {
   string subscription_status = 15;
   string subscription_plan = 16;
   string subscription_end_date = 17;
+  string country = 18;
 }
 
 message ReferralInfo {
@@ -156,6 +162,7 @@ message CreateRequest {
   string mood = 6;
   bool is_adult = 7;
   string ref_account_id = 8; // Referral account ID
+  string country = 9;
 }
 
 message CreateResponse {
@@ -195,6 +202,7 @@ message UpdateRequest {
   google.protobuf.BoolValue is_subscription = 8;
   google.protobuf.BoolValue is_adult = 9;
   google.protobuf.BoolValue is_show_subscription_badge = 10;
+  string country = 11;
 }
 
 message UpdateResponse {
@@ -449,6 +457,7 @@ message UserDetail {
   string subscription_end_date = 17;
   ReferrerInfo referred_by = 18;
   ReferralStats referral_stats = 19;
+  string country = 20;
 }
 
 message ReferrerInfo {
@@ -484,6 +493,7 @@ message GetUserReferralsAdminResponse {
   int32 total = 2;
   int32 page = 3;
   int32 limit = 4;
+  int32 total_pages = 5;
 }
 
 
@@ -566,4 +576,8 @@ message ReferralDetail {
   double match_score = 5;
   string created_at = 6;
   string referred_at = 7;
+}
+
+message GetAvailableCountriesResponse {
+  repeated string countries = 1; // List of country codes: ["VN", "US", "JP", ...]
 }
