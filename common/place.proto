@@ -32,6 +32,7 @@ service PlaceService {
   rpc UpdateNewsFeed (UpdateNewsFeedReq) returns (UpdateNewsFeedRes);
   rpc DeleteNewsFeed (DeleteNewsFeedReq) returns (DeleteNewsFeedRes);
   rpc GetNewsFeedById (GetNewsFeedByIdReq) returns (GetNewsFeedByIdRes);
+  rpc GetNewsFeedsByIds (GetNewsFeedsByIdsReq) returns (GetNewsFeedsByIdsRes);
 
   // List APIs
   rpc GetNewsFeedByAccountId (GetNewsFeedByAccountIdReq) returns (GetNewsFeedByAccountIdRes);
@@ -301,6 +302,14 @@ message GetNewsFeedByIdReq {
 
 message GetNewsFeedByIdRes {
   NewsFeed feed = 1;
+}
+
+message GetNewsFeedsByIdsReq {
+  repeated string newsfeed_ids = 1;
+}
+
+message GetNewsFeedsByIdsRes {
+  repeated NewsFeed feeds = 1;
 }
 
 // ----------- List by account/place -------------
