@@ -20,7 +20,12 @@ service AuthService {
     rpc ValidateToken (ValidateTokenRequest) returns (ValidateTokenResponse);
     rpc CheckPhoneExists (CheckPhoneExistsRequest) returns (CheckPhoneExistsResponse);
     rpc GetAccountsByPhone (GetAccountsByPhoneRequest) returns (GetAccountsByPhoneResponse);
+    rpc GetAccountsByIds (GetAccountsByIdsRequest) returns (GetAccountsByIdsResponse);
     rpc DeleteAccount (DeleteAccountRequest) returns (DeleteAccountResponse);
+    rpc GetMyAccount (GetMyAccountRequest) returns (GetMyAccountResponse);
+    rpc LoginAdmin (LoginAdminRequest) returns (LoginAdminResponse);
+    rpc GetAdminInfo (GetAdminInfoRequest) returns (GetAdminInfoResponse);
+    rpc ChangeAdminPassword (ChangeAdminPasswordRequest) returns (ChangeAdminPasswordResponse);
 }
 
 // Login request and response
@@ -93,6 +98,15 @@ message GetAccountsByPhoneResponse {
     repeated Account accounts = 1;
 }
 
+// Get accounts by IDs request and response
+message GetAccountsByIdsRequest {
+    repeated string account_ids = 1;
+}
+
+message GetAccountsByIdsResponse {
+    repeated Account accounts = 1;
+}
+
 // Delete account request and response
 message DeleteAccountRequest {
     string account_id = 1;
@@ -100,4 +114,52 @@ message DeleteAccountRequest {
 
 message DeleteAccountResponse {
     bool success = 1;
+}
+
+// Get my account request and response
+message GetMyAccountRequest {
+    string account_id = 1;
+}
+
+message GetMyAccountResponse {
+    string id = 1;
+    string phone = 2;
+}
+
+// Admin login request and response
+message LoginAdminRequest {
+    string username = 1;
+    string password = 2;
+}
+
+message LoginAdminResponse {
+    string access_token = 1;
+    string ws_token = 2;
+    string refresh_token = 3;
+    int32 expires_in = 4;
+    string role = 5;
+}
+
+// Get admin info request and response
+message GetAdminInfoRequest {
+    string admin_id = 1;
+}
+
+message GetAdminInfoResponse {
+    string id = 1;
+    string username = 2;
+    string role = 3;
+    bool is_active = 4;
+}
+
+// Change admin password request and response
+message ChangeAdminPasswordRequest {
+    string admin_id = 1;
+    string old_password = 2;
+    string new_password = 3;
+}
+
+message ChangeAdminPasswordResponse {
+    bool success = 1;
+    string message = 2;
 }

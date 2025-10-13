@@ -15,10 +15,17 @@ service SettingService {
   rpc BlockUser(BlockUserRequest) returns (google.protobuf.Empty);
   rpc UnblockUser(UnblockUserRequest) returns (google.protobuf.Empty);
   rpc CreateReport(CreateReportRequest) returns (CreateReportResponse);
-  
+  rpc GetAllReports(GetAllReportsRequest) returns (GetAllReportsResponse);
+  rpc GetReportById(GetReportByIdRequest) returns (GetReportByIdResponse);
+  rpc DeleteReport(DeleteReportRequest) returns (google.protobuf.Empty);
+  rpc UpdateReport(UpdateReportRequest) returns (google.protobuf.Empty);
+
   // BFF Notification Settings
   rpc GetNotificationBffSetting(GetNotificationBffSettingRequest) returns (NotificationBffSetting);
   rpc UpdateNotificationBffSetting(UpdateNotificationBffSettingRequest) returns (google.protobuf.Empty);
+
+  // Ghost Mode Settings
+  rpc GetGhostModeSettingsForBFF(GetGhostModeSettingsForBFFRequest) returns (GetGhostModeSettingsForBFFResponse);
 
   // SOS Settings
   rpc GetUserSOSSetting(GetUserSOSSettingRequest) returns (GetUserSOSSettingResponse);
@@ -101,6 +108,11 @@ message GhostModeSetting {
   string bff_account_id = 1;
   string duration = 2;
   LocationVisibilityType visibility_type = 3;
+  // Fixed location coordinates (only used when visibility_type = VISIBILITY_TYPE_FIXED)
+  double fixed_lat = 4;
+  double fixed_lng = 5;
+  // Timestamp when the fixed location was set
+  google.protobuf.Timestamp fixed_timestamp = 6;
 }
 
 // Meetup Setting
@@ -160,6 +172,11 @@ message UpdateGhostModeSetting {
   repeated string bff_account_ids = 1;
   string duration = 2;
   LocationVisibilityType visibility_type = 3;
+  // Fixed location coordinates (only used when visibility_type = VISIBILITY_TYPE_FIXED)
+  double fixed_lat = 4;
+  double fixed_lng = 5;
+  // Timestamp when the fixed location was set
+  google.protobuf.Timestamp fixed_timestamp = 6;
 }
 
 // New request message for BlockUser RPC
@@ -183,6 +200,8 @@ message Report {
   google.protobuf.Timestamp created_at = 5;
   google.protobuf.Timestamp updated_at = 6;
   string reported_account_id = 7;
+  string status = 8;
+  string note = 9;
 }
 
 message CreateReportRequest {
@@ -194,6 +213,49 @@ message CreateReportRequest {
 
 message CreateReportResponse {
   Report report = 1;
+}
+
+// Get all reports request and response
+message GetAllReportsRequest {
+  int32 page = 1;
+  int32 limit = 2;
+  string report_type = 3;
+  string start_date = 4;
+  string end_date = 5;
+  string sort_by = 6;
+  string sort_order = 7;
+  string search_reporter = 8;
+  string search_reported = 9;
+  string status = 10;
+}
+
+message GetAllReportsResponse {
+  repeated Report reports = 1;
+  int32 total = 2;
+  int32 page = 3;
+  int32 limit = 4;
+  int32 total_pages = 5;
+}
+
+// Get report by ID request and response
+message GetReportByIdRequest {
+  string report_id = 1;
+}
+
+message GetReportByIdResponse {
+  Report report = 1;
+}
+
+// Delete report request
+message DeleteReportRequest {
+  string report_id = 1;
+}
+
+// Update report request
+message UpdateReportRequest {
+  string report_id = 1;
+  string status = 2;
+  string note = 3;
 }
 
 // SOS Setting
@@ -251,4 +313,24 @@ message GetUserSOSSettingRequest {
 message GetUserSOSSettingResponse {
   UserSOSSetting sos_setting = 1;
   repeated SOSRequest sos_requests = 2;
+}
+
+// Ghost Mode Settings for BFF
+message GetGhostModeSettingsForBFFRequest {
+  string bff_account_id = 1;
+}
+
+message GetGhostModeSettingsForBFFResponse {
+  repeated GhostModeSettingInfo settings = 1;
+}
+
+message GhostModeSettingInfo {
+  string account_id = 1;       // Who set the ghost mode
+  string visibility_type = 2;  // blurred/hidden/fixed/precise
+  string expires_at = 3;        // Expiration timestamp
+  // Fixed location coordinates (only used when visibility_type = "fixed")
+  double fixed_lat = 4;
+  double fixed_lng = 5;
+  // Timestamp when the fixed location was set
+  google.protobuf.Timestamp fixed_timestamp = 6;
 }
