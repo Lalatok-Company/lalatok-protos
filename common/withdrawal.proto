@@ -1,0 +1,106 @@
+syntax = "proto3";
+
+package withdrawal;
+
+option go_package = "withdrawalpb/";
+
+import "google/protobuf/timestamp.proto";
+
+// Withdrawal service
+service WithdrawalService {
+  rpc CreateWithdrawal(CreateWithdrawalReq) returns (WithdrawalResponse);
+  rpc GetUserWithdrawals(GetUserWithdrawalsReq) returns (WithdrawalListResponse);
+  rpc GetWithdrawalById(GetWithdrawalByIdReq) returns (WithdrawalResponse);
+  rpc GetAllWithdrawals(GetAllWithdrawalsReq) returns (WithdrawalListResponse);
+  rpc UpdateWithdrawalStatus(UpdateWithdrawalStatusReq) returns (WithdrawalResponse);
+}
+
+// Withdrawal status enum
+enum WithdrawalStatus {
+  UNKNOWN = 0;
+  PENDING = 1;
+  APPROVED = 2;
+  REJECTED = 3;
+}
+
+// User info nested message
+message UserInfo {
+  string account_id = 1;
+  string username = 2;
+  string display_name = 3;
+  string avatar_url = 4;
+}
+
+// Withdrawal message
+message Withdrawal {
+  string id = 1;
+  string user_id = 2;
+  string legal_name = 3;
+  string bank_name = 4;
+  string bank_account_number = 5;
+  string email = 6;
+  double amount = 7;
+  WithdrawalStatus status = 8;
+  string admin_note = 9;
+  google.protobuf.Timestamp created_at = 10;
+  google.protobuf.Timestamp updated_at = 11;
+  string approved_by = 12;
+  google.protobuf.Timestamp approved_at = 13;
+  UserInfo user_info = 14;
+  UserInfo admin_info = 15;
+}
+
+// Create withdrawal request
+message CreateWithdrawalReq {
+  string user_id = 1;
+  string legal_name = 2;
+  string bank_name = 3;
+  string bank_account_number = 4;
+  string email = 5;
+  double amount = 6;
+}
+
+message WithdrawalResponse {
+  Withdrawal withdrawal = 1;
+  bool success = 2;
+  string message = 3;
+}
+
+// Get user withdrawals
+message GetUserWithdrawalsReq {
+  string user_id = 1;
+  int32 page = 2;
+  int32 limit = 3;
+}
+
+// Get withdrawal by ID
+message GetWithdrawalByIdReq {
+  string id = 1;
+}
+
+// Get all withdrawals (admin)
+message GetAllWithdrawalsReq {
+  WithdrawalStatus status = 1; // 0 = all, 1 = PENDING, 2 = APPROVED, 3 = REJECTED
+  int32 page = 2;
+  int32 limit = 3;
+  string search = 4; // Search in email, legal_name, bank_account_number
+  string from_date = 5; // ISO date string (YYYY-MM-DD)
+  string to_date = 6; // ISO date string (YYYY-MM-DD)
+  string sort_by = 7; // created_at, amount, status (default: created_at)
+  string sort_order = 8; // asc, desc (default: desc)
+}
+
+message WithdrawalListResponse {
+  repeated Withdrawal withdrawals = 1;
+  int32 total = 2;
+  int32 page = 3;
+  int32 limit = 4;
+}
+
+// Update withdrawal status (admin)
+message UpdateWithdrawalStatusReq {
+  string id = 1;
+  WithdrawalStatus status = 2;
+  string admin_note = 3;
+  string admin_id = 4;
+}
