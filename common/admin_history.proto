@@ -1,0 +1,77 @@
+syntax = "proto3";
+
+package admin_history;
+
+option go_package = "adminhistorypb/";
+
+import "google/protobuf/timestamp.proto";
+
+// Admin History service - only for saving and retrieving notification history
+service AdminHistoryService {
+  rpc SaveNotificationHistory(SaveNotificationHistoryReq) returns (NotificationHistoryRes);
+  rpc GetNotificationHistory(GetNotificationHistoryReq) returns (NotificationHistoryListRes);
+  rpc GetNotificationById(GetNotificationByIdReq) returns (NotificationHistoryRes);
+}
+
+// Target type enum
+enum TargetType {
+  TARGET_UNKNOWN = 0;
+  SPECIFIC_USERS = 1;
+  ALL_USERS = 2;
+  BY_COUNTRY = 3;
+}
+
+// Notification history message
+message NotificationHistory {
+  string id = 1;
+  string admin_id = 2;
+  string title = 3;
+  string body = 4;
+  string image_url = 5;
+  map<string, string> notification_data = 6;
+  TargetType target_type = 7;
+  string target_details = 8; // JSON string
+  int32 success_count = 9;
+  int32 failure_count = 10;
+  google.protobuf.Timestamp created_at = 11;
+  google.protobuf.Timestamp updated_at = 12;
+}
+
+// Save notification history
+message SaveNotificationHistoryReq {
+  string admin_id = 1;
+  string title = 2;
+  string body = 3;
+  string image_url = 4;
+  map<string, string> data = 5;
+  TargetType target_type = 6;
+  string target_details = 7; // JSON string with accountIds or countries
+  int32 success_count = 8;
+  int32 failure_count = 9;
+}
+
+message NotificationHistoryRes {
+  NotificationHistory notification = 1;
+  bool success = 2;
+  string message = 3;
+}
+
+// Get notification history with pagination
+message GetNotificationHistoryReq {
+  int32 page = 1;
+  int32 limit = 2;
+  string admin_id = 3;
+  string target_type = 4;
+}
+
+message NotificationHistoryListRes {
+  repeated NotificationHistory notifications = 1;
+  int32 total = 2;
+  int32 page = 3;
+  int32 limit = 4;
+}
+
+// Get by ID
+message GetNotificationByIdReq {
+  string id = 1;
+}
