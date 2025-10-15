@@ -17,6 +17,7 @@ enum Platform {
 // Notification service
 service NotificationService {
   rpc SaveDeviceToken(DeviceToken) returns (google.protobuf.Empty);
+  rpc SaveDeviceTokenWithCountry(SaveDeviceTokenWithCountryReq) returns (google.protobuf.Empty);
   rpc GetAllDeviceTokens(GetAllDeviceTokensReq) returns (GetAllDeviceTokensRes);
 
   rpc RemoveDeviceToken(RemoveDeviceTokenReq) returns (google.protobuf.Empty);
@@ -35,6 +36,15 @@ message DeviceToken {
   string device_id = 3;
   string device_name = 4;
   Platform platform = 5;
+}
+
+message SaveDeviceTokenWithCountryReq {
+  string account_id = 1;
+  string fcm_token = 2;
+  string device_id = 3;
+  string device_name = 4;
+  Platform platform = 5;
+  string country = 6; // Country code: VN, TH, US, etc.
 }
 
 message GetAllDeviceTokensReq {
