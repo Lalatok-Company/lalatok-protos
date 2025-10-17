@@ -57,6 +57,18 @@ service ProfileService {
   rpc GetUserReferrals(GetUserReferralsRequest) returns (GetUserReferralsResponse);
   // Get all referrals in the system (public version with limited access)
   rpc GetAllReferrals(GetAllReferralsRequest) returns (GetAllReferralsResponse);
+
+  // Event management methods
+  // Admin event management
+  rpc CreateReferralEvent(CreateEventRequest) returns (ReferralEvent);
+  rpc UpdateReferralEvent(UpdateEventRequest) returns (ReferralEvent);
+  rpc ToggleEventStatus(ToggleEventStatusRequest) returns (ReferralEvent);
+  rpc GetEventByID(GetEventByIDRequest) returns (ReferralEvent);
+  rpc GetAllEvents(GetAllEventsRequest) returns (GetAllEventsResponse);
+
+  // Public/User event methods
+  rpc GetActiveEvent(GetActiveEventRequest) returns (GetActiveEventResponse);
+  rpc GetMyEventWallet(GetMyWalletRequest) returns (GetMyWalletResponse);
 }
 
 // Admin service for user management
@@ -580,4 +592,93 @@ message ReferralDetail {
 
 message GetAvailableCountriesResponse {
   repeated string countries = 1; // List of country codes: ["VN", "US", "JP", ...]
+}
+
+// ========== EVENT MANAGEMENT ==========
+
+message ReferralEvent {
+  string id = 1;
+  string event_code = 2;
+  string event_name = 3;
+  string description = 4;
+  string start_date = 5;
+  string end_date = 6;
+  bool is_active = 7;
+}
+
+message RewardTier {
+  int32 min = 1;
+  int32 max = 2;
+  double amount = 3;
+  string badge = 4;
+}
+
+message UserEventWallet {
+  string id = 1;
+  string account_id = 2;
+  string event_id = 3;
+  string user_signup_date = 4;
+  string event_window_end = 5;
+  int32 valid_referrals = 6;
+  double available_balance = 7;
+  double withdrawn_balance = 8;
+  bool has_ambassador_badge = 9;
+}
+
+message CreateEventRequest {
+  string event_code = 1;
+  string event_name = 2;
+  string description = 3;
+  string start_date = 4;
+  string end_date = 5;
+  string reward_config_json = 6;
+}
+
+message GetActiveEventRequest {}
+
+message GetActiveEventResponse {
+  ReferralEvent event = 1;
+  repeated RewardTier tiers = 2;
+}
+
+message GetMyWalletRequest {
+  string account_id = 1;
+}
+
+message GetMyWalletResponse {
+  UserEventWallet wallet = 1;
+  ReferralEvent event = 2;
+  RewardTier current_tier = 3;
+  RewardTier next_tier = 4;
+}
+
+// Admin event management messages
+message UpdateEventRequest {
+  string id = 1;
+  optional string event_name = 2;
+  optional string description = 3;
+  optional string start_date = 4;
+  optional string end_date = 5;
+  optional string reward_config_json = 6;
+}
+
+message ToggleEventStatusRequest {
+  string id = 1;
+  bool is_active = 2;
+}
+
+message GetAllEventsRequest {
+  int32 page = 1;
+  int32 limit = 2;
+}
+
+message GetAllEventsResponse {
+  repeated ReferralEvent events = 1;
+  int32 total = 2;
+  int32 page = 3;
+  int32 limit = 4;
+}
+
+message GetEventByIDRequest {
+  string id = 1;
 }
