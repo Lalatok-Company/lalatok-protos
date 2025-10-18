@@ -21,6 +21,7 @@ message Profile {
   bool is_adult = 10;
   bool is_show_subscription_badge = 11;
   string country = 12;
+  bool is_ambassador = 13;
 }
 
 service ProfileService {
@@ -215,6 +216,7 @@ message UpdateRequest {
   google.protobuf.BoolValue is_adult = 9;
   google.protobuf.BoolValue is_show_subscription_badge = 10;
   string country = 11;
+  google.protobuf.BoolValue is_ambassador = 12;
 }
 
 message UpdateResponse {
