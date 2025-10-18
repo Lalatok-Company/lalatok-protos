@@ -93,6 +93,11 @@ message UserLikePhotoEventParams {
   int32 like_count = 1;
 }
 
+message UserSuccessfulReferralEventParams {
+  string referrer_account_id = 1;
+  int32 successful_referral_count = 2;
+}
+
 message UpdateMissionProgressRequest {
   string user_id = 1;                           // ID of the user performing the action
   string event_type = 2;                        // e.g., "user_check_in", "user_uploaded_photo"
@@ -101,6 +106,7 @@ message UpdateMissionProgressRequest {
     UserLeaveFootprintEventParams leave_footprint_params = 5;
     UserUploadPhotoEventParams upload_photo_params = 6;
     UserLikePhotoEventParams like_photo_params = 7;
+    UserSuccessfulReferralEventParams successful_referral_params = 8;
   }
 }
 
@@ -109,6 +115,7 @@ message CompletedMission {
   string awarded_badge_id = 2;
   string awarded_badge_name = 3; // Denormalized for convenience
   int32 points_rewarded = 4;
+  bool should_grant_ambassador = 5;
 }
 
 message UpdateMissionProgressResponse {
