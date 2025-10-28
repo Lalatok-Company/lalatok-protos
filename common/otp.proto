@@ -11,6 +11,7 @@ service OtpService {
   rpc Verify(VerifyRequest) returns (VerifyResponse);
   rpc Get(GetRequest) returns (GetResponse);
   rpc SendMessage(SendMessageRequest) returns (SendMessageResponse);
+  rpc RetryOTP(RetryOTPRequest) returns (RetryOTPResponse);
 }
 
 // Create OTP request and response
@@ -48,5 +49,15 @@ message SendMessageRequest {
 }
 
 message SendMessageResponse {
+  bool status = 1;
+}
+
+// Retry OTP request and response
+message RetryOTPRequest {
+  string phone_number = 1;
+  int32 attempt = 2;
+}
+
+message RetryOTPResponse {
   bool status = 1;
 }
