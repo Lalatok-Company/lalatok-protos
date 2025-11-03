@@ -88,6 +88,10 @@ service AdminService {
   rpc GetAvailableCountries(google.protobuf.Empty) returns (GetAvailableCountriesResponse);
   // Get user registration statistics by date
   rpc GetUserRegistrationStats(GetUserRegistrationStatsRequest) returns (GetUserRegistrationStatsResponse);
+  // Create a new user
+  rpc CreateUser(CreateUserRequest) returns (CreateUserResponse);
+  // Delete a user
+  rpc DeleteUser(DeleteUserRequest) returns (DeleteUserResponse);
 }
 
 message GetAllUsersRequest {
@@ -702,4 +706,29 @@ message GetAllEventsResponse {
 
 message GetEventByIDRequest {
   string id = 1;
+}
+
+message CreateUserRequest {
+  string account_id = 1;
+  string username = 2;
+  string avatar_url = 3;
+  string gender = 4;
+  string birth_day = 5;
+  string mood = 6;
+  RepeatedStringValue badges = 7;
+  google.protobuf.BoolValue is_subscription = 8;
+  google.protobuf.BoolValue is_adult = 9;
+  google.protobuf.BoolValue is_show_subscription_badge = 10;
+  string country = 11;
+  google.protobuf.BoolValue is_ambassador = 12;
+  string created_by = 13;
+}
+message CreateUserResponse {
+  UserDetail user = 1;
+}
+message DeleteUserRequest {
+  string id = 1;
+}
+message DeleteUserResponse {
+  bool success = 1;
 }
