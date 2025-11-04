@@ -50,6 +50,7 @@ message LoginByPhoneRequest {
 message RegisterRequest {
     string phone = 1;
     string password = 2;
+    string ref_by = 3;
 }
 
 message RegisterResponse {

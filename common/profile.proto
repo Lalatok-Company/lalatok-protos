@@ -90,8 +90,6 @@ service AdminService {
   rpc GetUserRegistrationStats(GetUserRegistrationStatsRequest) returns (GetUserRegistrationStatsResponse);
   // Create a new user
   rpc CreateUser(CreateUserRequest) returns (CreateUserResponse);
-  // Delete a user
-  rpc DeleteUser(DeleteUserRequest) returns (DeleteUserResponse);
 }
 
 message GetAllUsersRequest {
@@ -722,6 +720,7 @@ message CreateUserRequest {
   string country = 11;
   google.protobuf.BoolValue is_ambassador = 12;
   string created_by = 13;
+  google.protobuf.BoolValue is_test_account = 14;
 }
 message CreateUserResponse {
   UserDetail user = 1;
