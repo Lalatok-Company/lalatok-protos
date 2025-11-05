@@ -721,6 +721,7 @@ message CreateUserRequest {
   google.protobuf.BoolValue is_ambassador = 12;
   string created_by = 13;
   google.protobuf.BoolValue is_test_account = 14;
+  string ref_account_id = 15;
 }
 message CreateUserResponse {
   UserDetail user = 1;
