@@ -180,6 +180,7 @@ message CreateRequest {
   bool is_adult = 7;
   string ref_account_id = 8; // Referral account ID
   string country = 9;
+  bool is_direct_ref_code = 10; // Direct referral code flag
 }
 
 message CreateResponse {
@@ -722,6 +723,7 @@ message CreateUserRequest {
   string created_by = 13;
   google.protobuf.BoolValue is_test_account = 14;
   string ref_account_id = 15;
+  bool is_direct_ref_code = 16; // Direct referral code flag
 }
 message CreateUserResponse {
   UserDetail user = 1;
