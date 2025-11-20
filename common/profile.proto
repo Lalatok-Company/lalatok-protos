@@ -505,6 +505,7 @@ message GetUserReferralsAdminRequest {
   int32 page = 2;
   int32 limit = 3;
   string status = 4;
+  optional bool is_direct = 5;
 }
 
 message GetUserReferralsAdminResponse {
@@ -564,6 +565,7 @@ message GetAllReferralsRequest {
   repeated string search_user_ids = 10; // search by multiple user account IDs
   string gender = 11; // filter by gender (male, female, etc.)
   string country = 12; // filter by country code
+  optional bool is_direct = 13; // filter by direct referral or not direct referral
 }
 
 message GetAllReferralsResponse {
