@@ -10,6 +10,7 @@ service MediaService {
   rpc DeleteMedia(DeleteMediaRequest) returns (DeleteMediaResponse) {}
   rpc PresignedPutObject(PresignedPutObjectRequest) returns (PresignedPutObjectResponse) {}
   rpc CheckAndUpdateStatusMedia(CheckAndUpdateStatusMediaRequest) returns (CheckAndUpdateStatusMediaResponse) {}
+  rpc UpdateStatusMedia(UpdateStatusMediaRequest) returns (UpdateStatusMediaResponse) {}
 }
 
 message UploadMediaRequest {
@@ -81,4 +82,14 @@ message CheckAndUpdateStatusMediaRequest {
 
 message CheckAndUpdateStatusMediaResponse {
   bool success = 1;
+}
+
+message UpdateStatusMediaRequest {
+  string media_id = 1;
+  string status = 2;
+}
+
+message UpdateStatusMediaResponse {
+  bool success = 1;
+  MediaData media = 2;
 }
