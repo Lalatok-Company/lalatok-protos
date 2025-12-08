@@ -8,6 +8,9 @@ service MediaService {
   rpc GetMedia(GetMediaRequest) returns (GetMediaResponse) {}
   rpc GetUserMedia(GetUserMediaRequest) returns (GetUserMediaResponse) {}
   rpc DeleteMedia(DeleteMediaRequest) returns (DeleteMediaResponse) {}
+  rpc PresignedPutObject(PresignedPutObjectRequest) returns (PresignedPutObjectResponse) {}
+  rpc CheckAndUpdateStatusMedia(CheckAndUpdateStatusMediaRequest) returns (CheckAndUpdateStatusMediaResponse) {}
+  rpc UpdateStatusMedia(UpdateStatusMediaRequest) returns (UpdateStatusMediaResponse) {}
 }
 
 message UploadMediaRequest {
@@ -60,4 +63,33 @@ message DeleteMediaRequest {
 
 message DeleteMediaResponse {
   bool success = 1;
+}
+
+message PresignedPutObjectRequest {
+  string object_name = 1;
+  string account_id = 2;
+}
+
+message PresignedPutObjectResponse {
+  string presigned_url = 1;
+  string path = 2;
+  string media_id = 3;
+}
+
+message CheckAndUpdateStatusMediaRequest {
+  repeated string media_ids = 1;
+}
+
+message CheckAndUpdateStatusMediaResponse {
+  bool success = 1;
+}
+
+message UpdateStatusMediaRequest {
+  string media_id = 1;
+  string status = 2;
+}
+
+message UpdateStatusMediaResponse {
+  bool success = 1;
+  MediaData media = 2;
 }
