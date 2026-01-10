@@ -21,6 +21,9 @@ service LocationService {
   rpc GetAccountByIds (GetAccountByIdsReq) returns (GetAccountsInBoxRes);
   rpc GetFootprintsByAccount (GetFootprintsByAccountReq) returns (GetFootprintsRes);
   rpc CheckLocationDuration (CheckLocationDurationReq) returns (CheckLocationDurationRes);
+  rpc CalculateTimeTogether (CalculateTimeTogetherReq) returns (CalculateTimeTogetherRes);
+  rpc GetTimeTogether (GetTimeTogetherReq) returns (GetTimeTogetherRes);
+  rpc CalculateTimeTogetherAndStore (CalculateTimeTogetherAndStoreReq) returns (CalculateTimeTogetherAndStoreRes);
 }
 
 // Update location
@@ -172,4 +175,27 @@ message CheckLocationDurationRes {
   string message = 4;
   double distance_meters = 5;
   google.protobuf.Timestamp session_start = 6;
+}
+// Calculate time together
+message CalculateTimeTogetherReq {
+  string account_id = 1;
+   string friend_id = 2;
+}
+message CalculateTimeTogetherRes {
+  int64 time_together_seconds = 1;
+}
+
+message GetTimeTogetherReq {
+  string user_id = 1;
+  string friend_id = 2;
+}
+message GetTimeTogetherRes {
+  int64 time_together_seconds = 1;
+}
+message CalculateTimeTogetherAndStoreReq {
+  string account_id = 1;
+  repeated string friend_ids = 2;
+}
+message CalculateTimeTogetherAndStoreRes {
+  bool success = 1;
 }
