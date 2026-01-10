@@ -11,6 +11,8 @@ service MediaService {
   rpc PresignedPutObject(PresignedPutObjectRequest) returns (PresignedPutObjectResponse) {}
   rpc CheckAndUpdateStatusMedia(CheckAndUpdateStatusMediaRequest) returns (CheckAndUpdateStatusMediaResponse) {}
   rpc UpdateStatusMedia(UpdateStatusMediaRequest) returns (UpdateStatusMediaResponse) {}
+  rpc GetTutorialVideo(GetTutorialVideoRequest) returns (GetTutorialVideoResponse) {}
+  rpc MarkVideoWatched(MarkVideoWatchedRequest) returns (MarkVideoWatchedResponse) {}
 }
 
 message UploadMediaRequest {
@@ -92,4 +94,27 @@ message UpdateStatusMediaRequest {
 message UpdateStatusMediaResponse {
   bool success = 1;
   MediaData media = 2;
+}
+
+message GetTutorialVideoRequest {
+  string type = 1;
+  string language = 2;
+  string user_id = 3;
+}
+
+message GetTutorialVideoResponse {
+  string url = 1;
+  bool is_seen = 2;
+  string type = 3;
+  string language = 4;
+}
+
+message MarkVideoWatchedRequest {
+  string user_id = 1;
+  string type = 2;
+}
+
+message MarkVideoWatchedResponse {
+  bool success = 1;
+  string message = 2;
 }
