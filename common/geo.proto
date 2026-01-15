@@ -10,6 +10,7 @@ service GeoService {
     rpc GetLocations (GetLocationsRequest) returns (GetLocationsResponse);
 
     rpc GetDistrictByIds (GetDistrictByIdsReq) returns (GetDistrictByIdsResp);
+    rpc GetProvinceByIds (GetProvinceByIdsReq) returns (GetProvinceByIdsResp);
 
     rpc SyncLocation (SyncLocationRequest) returns (SyncLocationResponse);
     
@@ -64,6 +65,13 @@ message GetDistrictByIdsReq {
 }
 message GetDistrictByIdsResp {
     repeated LocationDetail districts = 1;
+}
+
+message GetProvinceByIdsReq {
+    repeated int64 ids = 1;
+}
+message GetProvinceByIdsResp {
+    repeated LocationDetail provinces = 1;
 }
 
 
