@@ -220,6 +220,10 @@ message GetCheckinByAccountReq {
   string start_date = 2;
   string end_date = 3;
   optional bool include_draft = 4; // true để lấy cả draft, false hoặc không có để lấy chỉ published
+  int64 ward_id = 5;
+  int64 district_id = 6;
+  int64 province_id = 7;
+  int64 country_id = 8;
 }
 
 message GetCheckinByAccountRes {
