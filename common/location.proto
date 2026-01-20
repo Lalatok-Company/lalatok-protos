@@ -24,6 +24,13 @@ service LocationService {
   rpc CalculateTimeTogether (CalculateTimeTogetherReq) returns (CalculateTimeTogetherRes);
   rpc GetTimeTogether (GetTimeTogetherReq) returns (GetTimeTogetherRes);
   rpc CalculateTimeTogetherAndStore (CalculateTimeTogetherAndStoreReq) returns (CalculateTimeTogetherAndStoreRes);
+  rpc GetTrackingSessionInDuration (GetTrackingSessionInDurationReq) returns (GetTrackingSessionInDurationRes);
+  
+  // First create user location summary data
+  rpc CheckUserLocationSummaryInitStatus (CheckUserLocationSummaryInitStatusReq) returns (CheckUserLocationSummaryInitStatusRes);
+  rpc MarkUserLocationSummaryAsInitialized (MarkUserLocationSummaryAsInitializedReq) returns (google.protobuf.Empty);
+  rpc GetAllSessionsForUser (GetAllSessionsForUserReq) returns (GetAllSessionsForUserRes);
+  rpc GetUserHaveLocationDistrict (google.protobuf.Empty) returns (GetUserHaveLocationDistrictRes);
 }
 
 // Update location
@@ -127,6 +134,7 @@ message UpdateLocationSummaryReq {
   int64 province_id = 3;
 	int64 district_id = 4;
   int64 ward_id = 5;
+  int64 add_duration_seconds = 6;
 } 
 
 message GetLocationSummaryReq {
@@ -198,4 +206,53 @@ message CalculateTimeTogetherAndStoreReq {
 }
 message CalculateTimeTogetherAndStoreRes {
   bool success = 1;
+}
+message GetTrackingSessionInDurationReq {
+  repeated string account_ids = 1;
+  string start_time = 2;
+  string end_time = 3;
+}
+message GetTrackingSessionInDurationRes {
+  repeated LocationSession sessions = 1;
+}
+message LocationSession {
+  string account_id = 1;
+  double lat = 2;
+  double lng = 3;
+  int64 h3_cell_id = 4;
+  int32 duration_seconds = 5;
+  bool is_moving = 6;
+  google.protobuf.Timestamp session_start = 7;
+  google.protobuf.Timestamp session_end = 8;
+}
+
+// First create user location summary data
+message CheckUserLocationSummaryInitStatusReq {
+  string user_id = 1;
+}
+
+message CheckUserLocationSummaryInitStatusRes {
+  bool is_initialized = 1;
+}
+
+message MarkUserLocationSummaryAsInitializedReq {
+  string user_id = 1;
+}
+
+message GetAllSessionsForUserReq {
+  string user_id = 1;
+}
+
+message GetAllSessionsForUserRes {
+  repeated LocationSession sessions = 1;
+}
+
+message GetUserHaveLocationDistrictRes {
+  repeated UserHaveLocationDistrict users = 1;
+}
+message UserHaveLocationDistrict {
+  string user_id = 1;
+  int64 district_id = 2;
+  int64 province_id = 3;
+  int64 country_id = 4;
 }
