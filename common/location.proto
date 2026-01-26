@@ -31,6 +31,13 @@ service LocationService {
   rpc MarkUserLocationSummaryAsInitialized (MarkUserLocationSummaryAsInitializedReq) returns (google.protobuf.Empty);
   rpc GetAllSessionsForUser (GetAllSessionsForUserReq) returns (GetAllSessionsForUserRes);
   rpc GetUserHaveLocationDistrict (google.protobuf.Empty) returns (GetUserHaveLocationDistrictRes);
+
+  rpc GetUserHaveSession(GetUserHaveSessionReq) returns (GetUserHaveSessionRes);
+}
+
+message GetUserHaveSessionReq {
+  int32 limit = 1;
+  int32 offset = 2;
 }
 
 // Update location
@@ -255,4 +262,19 @@ message UserHaveLocationDistrict {
   int64 district_id = 2;
   int64 province_id = 3;
   int64 country_id = 4;
+}
+
+message GetUserHaveSessionRes {
+  repeated TrackingSession sessions = 1;
+}
+
+message TrackingSession{
+  string user_id = 1;
+  double lat = 2;
+  double lng = 3;
+  int64 h3_cell_id = 4;
+  int32 duration_seconds = 5;
+  bool is_moving = 6;
+  google.protobuf.Timestamp session_start = 7;
+  google.protobuf.Timestamp session_end = 8;
 }
