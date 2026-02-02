@@ -90,8 +90,9 @@ message NotificationBffSetting {
   bool new_country = 5;       // When BFF travels to a new country
   bool city_arrival = 6;      // When BFF arrives in a city
   bool near_me = 7;           // When BFF comes within 1km
-  google.protobuf.Timestamp created_at = 8;
-  google.protobuf.Timestamp updated_at = 9;
+  bool new_checkin = 8;       // When you and your BFF check in to a new place
+  google.protobuf.Timestamp created_at = 9;
+  google.protobuf.Timestamp updated_at = 10;
 }
 
 // Ghost Mode Settings
