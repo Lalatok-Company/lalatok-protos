@@ -16,6 +16,16 @@ service GeoService {
     
     // Search Places
     rpc SearchPlaces (SearchPlacesRequest) returns (SearchPlacesResponse);
+
+    rpc TriggerIndexCountry(TriggerIndexCountryRequest) returns (TriggerIndexCountryResponse);
+}
+message TriggerIndexCountryRequest {
+    string region = 1;
+    string country = 2;
+}
+message TriggerIndexCountryResponse {
+    bool success = 1;
+    string message = 2;
 }
 
 message Location {
