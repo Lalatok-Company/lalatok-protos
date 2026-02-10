@@ -37,10 +37,11 @@ service SocialService {
   // Reset all relationships between two users
   rpc ResetRelationship(ResetRelationshipRequest) returns (ResetRelationshipResponse);
 
-  // coming 
+  // coming
   rpc CreateComing(CreateComingReq) returns (google.protobuf.Empty);
   rpc GetComing(GetComingReq) returns (GetComingRes);
   rpc DeleteComing(DeleteComingReq) returns (google.protobuf.Empty);
+  rpc DeleteAllComingsByUserID(DeleteAllComingsByUserIDReq) returns (google.protobuf.Empty);
 
   // Get suggested friends
   rpc GetSuggestedFriends(GetSuggestedFriendsReq) returns (GetSuggestedFriendsRes);
@@ -220,6 +221,10 @@ message GetComingRes {
 message DeleteComingReq {
   string account_id = 1;
   string target_id = 2;
+}
+
+message DeleteAllComingsByUserIDReq {
+  string account_id = 1;
 }
 
 // Suggested Friends
