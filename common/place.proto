@@ -225,6 +225,7 @@ message GetCheckinByAccountReq {
   int64 district_id = 6;
   int64 province_id = 7;
   int64 country_id = 8;
+  bool only_draft = 9;
 }
 
 message GetCheckinByAccountRes {
