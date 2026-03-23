@@ -23,6 +23,7 @@ service PlaceService {
   rpc UpdateCheckinDraftStatus (UpdateCheckinDraftStatusReq) returns (UpdateCheckinDraftStatusRes);
   rpc GetCheckinByAccount (GetCheckinByAccountReq) returns (GetCheckinByAccountRes);
   rpc GetCheckinByPlace (GetCheckinByPlaceReq) returns (GetCheckinByPlaceRes);
+  rpc GetCheckinDetail (GetCheckinDetailReq) returns (GetCheckinDetailRes);
 
   rpc GetAllPlaces (google.protobuf.Empty) returns (GetPlacesRes);
 
@@ -605,4 +606,12 @@ message GetUniqueCheckinCountByDistrictReq {
 message GetUniqueCheckinCountByDistrictRes {
   int64 unique_place_count = 1;
   int64 total_checkin_count = 2;
+}
+
+message GetCheckinDetailReq {
+  string checkin_id = 1;
+}
+
+message GetCheckinDetailRes {
+  Checkin checkin = 1;
 }
