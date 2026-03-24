@@ -254,6 +254,7 @@ message UpdateCheckinDurationRes {
 message UpdateCheckinDraftStatusReq {
   string checkin_id = 1;
   bool is_draft = 2;
+  optional string place_id = 3;
 }
 
 message UpdateCheckinDraftStatusRes {
