@@ -195,6 +195,7 @@ message Checkin {
   string created_at = 4; // YYYY-MM-DD HH:MM:SS
   bool is_draft = 5;
   int64 total_duration_minutes = 6;
+  map<string, string> metadata = 7;
 }
 
 message CreateCheckinReq {
@@ -202,6 +203,7 @@ message CreateCheckinReq {
   string account_id = 3;
   optional bool is_draft = 4;
   optional int64 total_duration_minutes = 5;
+  map<string, string> metadata = 6;
 }
 
 message CreateCheckinRes {
