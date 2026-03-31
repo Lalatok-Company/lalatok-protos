@@ -131,7 +131,7 @@ message SendMessageRequest {
   string receiver_account_id = 3;  // Optional, for private messages
   string content = 4;
   string message_type = 5;
-  map<string, string> metadata = 6;  // For additional data like location coordinates, file info
+  string metadata = 6;  // JSON string preserving original types
   string reply_to_message_id = 7;    // Optional, for reply messages
   string reply_to_photo_id = 8;
   bool isBlocked = 9;
@@ -216,7 +216,7 @@ message Message {
   string receiver_account_id = 4;  // For private messages
   string content = 5;
   string message_type = 6;
-  map<string, string> metadata = 7;
+  string metadata = 7;  // JSON string preserving original types
   string reply_to_message_id = 8;
   repeated string liked_by = 9;
   string status = 10;  // sent, delivered, read
