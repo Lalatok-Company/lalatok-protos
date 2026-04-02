@@ -70,6 +70,7 @@ service PlaceService {
 
   rpc GetPlaceCounters (GetPlaceCountersReq) returns (PlaceCounters);
   rpc GetPlaceCountersByIds (GetPlaceCountersByIdsReq) returns (GetPlaceCountersByIdsRes);
+  rpc GetTotalCheckinCountByPlace (GetTotalCheckinCountByPlaceReq) returns (GetTotalCheckinCountByPlaceRes);
 
   // Get user checked-in places
   rpc GetCheckedInPlaces (GetCheckedInPlacesReq) returns (GetCheckedInPlacesRes);
@@ -495,6 +496,13 @@ message GetPlaceCountersByIdsReq {
 }
 message GetPlaceCountersByIdsRes {
   repeated PlaceCounters place_counters = 1;
+}
+
+message GetTotalCheckinCountByPlaceReq {
+  string place_id = 1;
+}
+message GetTotalCheckinCountByPlaceRes {
+  int64 total_checkin_count = 1;
 }
 
 // ---- Get user checked-in places ----
