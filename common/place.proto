@@ -508,6 +508,7 @@ message GetTotalCheckinCountByPlaceRes {
 // ---- Get user checked-in places ----
 message GetCheckedInPlacesReq {
   string account_id = 1;
+  bool is_draft = 2;
 }
 message GetCheckedInPlacesRes {
   repeated string place_ids = 1; // List of place IDs where the user has checked in
