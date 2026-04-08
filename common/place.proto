@@ -91,6 +91,7 @@ service PlaceService {
 
   // Get unique checkin count by district
   rpc GetUniqueCheckinCountByDistrict (GetUniqueCheckinCountByDistrictReq) returns (GetUniqueCheckinCountByDistrictRes);
+  rpc DeleteCheckinDraftExpire (DeleteCheckinDraftExpireReq) returns (DeleteCheckinDraftExpireRes);
 }
 
 // Category
@@ -648,5 +649,12 @@ message UpdateDraftCheckinNotificationCountReq {
 }
 
 message UpdateDraftCheckinNotificationCountRes {
+  bool status = 1;
+}
+
+message DeleteCheckinDraftExpireReq {
+  string time = 1;
+}
+message DeleteCheckinDraftExpireRes {
   bool status = 1;
 }
