@@ -33,6 +33,25 @@ service LocationService {
   rpc GetUserHaveLocationDistrict (google.protobuf.Empty) returns (GetUserHaveLocationDistrictRes);
 
   rpc GetUserHaveSession(GetUserHaveSessionReq) returns (GetUserHaveSessionRes);
+  rpc GetHeatmap(GetHeatmapReq) returns (GetHeatmapRes);
+}
+
+message GetHeatmapReq {
+  double min_lat = 1;
+  double min_lng = 2;
+  double max_lat = 3;
+  double max_lng = 4;
+}
+
+message GetHeatmapRes {
+  repeated Heatmap heatmaps = 1;
+}
+
+message Heatmap {
+  uint64 h3_cell = 1;
+  double lat = 2;
+  double lng = 3;
+  int64 number_of_accounts = 4;
 }
 
 message GetUserHaveSessionReq {
