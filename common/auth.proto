@@ -26,6 +26,7 @@ service AuthService {
     rpc LoginAdmin (LoginAdminRequest) returns (LoginAdminResponse);
     rpc GetAdminInfo (GetAdminInfoRequest) returns (GetAdminInfoResponse);
     rpc ChangeAdminPassword (ChangeAdminPasswordRequest) returns (ChangeAdminPasswordResponse);
+    rpc LoginSocial (LoginSocialRequest) returns (LoginSocialResponse);
 }
 
 // Login request and response
@@ -163,4 +164,17 @@ message ChangeAdminPasswordRequest {
 message ChangeAdminPasswordResponse {
     bool success = 1;
     string message = 2;
+}
+
+// Login social request and response
+message LoginSocialRequest {
+    string provider = 1;
+    string access_token = 2;
+}
+
+message LoginSocialResponse {
+    string access_token = 1;
+    string ws_token = 2;
+    string refresh_token = 3;
+    int32 expires_in = 4;
 }
