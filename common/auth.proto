@@ -9,6 +9,14 @@ option go_package = "authpb/";
 message Account {
   string id = 1;
   string phone = 2;
+  repeated AccountSocial account_socials = 3;
+}
+
+message AccountSocial {
+    string provider = 1;
+    string email = 2;
+    bool is_mail_verified = 3;
+    bool is_private_email = 4;
 }
 
 // Auth service
@@ -27,6 +35,7 @@ service AuthService {
     rpc GetAdminInfo (GetAdminInfoRequest) returns (GetAdminInfoResponse);
     rpc ChangeAdminPassword (ChangeAdminPasswordRequest) returns (ChangeAdminPasswordResponse);
     rpc LoginSocial (LoginSocialRequest) returns (LoginSocialResponse);
+    rpc LinkSocial (LinkSocialRequest) returns (LinkSocialResponse);
 }
 
 // Login request and response
@@ -177,4 +186,15 @@ message LoginSocialResponse {
     string ws_token = 2;
     string refresh_token = 3;
     int32 expires_in = 4;
+}
+
+// Link social request and response
+message LinkSocialRequest {
+    string provider = 1;
+    string access_token = 2;
+    string account_id = 3;
+}
+
+message LinkSocialResponse {
+    bool success = 1;
 }
