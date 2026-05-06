@@ -48,6 +48,7 @@ message PrivacySetting {
   repeated string blacklisted_users = 8;
   google.protobuf.Timestamp created_at = 9;
   google.protobuf.Timestamp updated_at = 10;
+  bool auto_detect_visited_places = 11;
 }
 
 // System Setting represents user preferences for system-wide settings
