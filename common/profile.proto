@@ -75,7 +75,9 @@ service ProfileService {
   rpc GetProfileByAccountIDs(GetProfileByAccountIDsRequest) returns (GetProfileByAccountIDsResponse);
   rpc UpdateProfileLocalDistrict(UpdateProfileLocalDistrictRequest) returns (UpdateProfileLocalDistrictResponse);
   rpc UnlockPrivateMap(UnlockPrivateMapRequest) returns (UnlockPrivateMapResponse);
+  rpc GetBots(GetBotsRequest) returns (GetBotsResponse);
 }
+
 message UpdateProfileLocalDistrictRequest {
   string account_id = 1;
   int64 district_id = 2;
@@ -770,4 +772,13 @@ message UnlockPrivateMapRequest {
 
 message UnlockPrivateMapResponse {
   bool success = 1;
+}
+
+message GetBotsRequest {
+  int32 page = 1;
+  int32 limit = 2;
+}
+message GetBotsResponse {
+  repeated Profile bots = 1;
+  int32 total = 2;
 }
