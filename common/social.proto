@@ -45,6 +45,9 @@ service SocialService {
 
   // Get suggested friends
   rpc GetSuggestedFriends(GetSuggestedFriendsReq) returns (GetSuggestedFriendsRes);
+
+  // Mark friend profile as seen (first time viewing BFF profile)
+  rpc MarkFriendProfileAsSeen(MarkFriendProfileAsSeenReq) returns (MarkFriendProfileAsSeenRes);
 }
 
 message FollowRequest {
@@ -185,6 +188,7 @@ message GetRelationshipByAccountIdResponse {
   bool is_request_sent = 4;
   bool is_request_received = 5;
   int32 days_as_friend = 6;
+  bool first_seen = 7;
 }
 
 message GetRelationshipByAccountIdsRequest {
@@ -248,4 +252,14 @@ message ResetRelationshipRequest {
 message ResetRelationshipResponse {
   bool success = 1;
   string message = 2;
+}
+
+// Mark Friend Profile As Seen
+message MarkFriendProfileAsSeenReq {
+  string account_id = 1;
+  string target_id = 2;
+}
+
+message MarkFriendProfileAsSeenRes {
+  bool success = 1;
 }
