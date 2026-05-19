@@ -199,6 +199,7 @@ message GetRelationshipByAccountIdsResponse {
   repeated string friend_ids = 1;
   repeated string follower_ids = 2;
   repeated string following_ids = 3;
+  map<string, bool> first_seen = 4; // friend_account_id -> isFirstSeen (true = not yet seen by user)
 }
 
 message GetFollowersCountRequest {
