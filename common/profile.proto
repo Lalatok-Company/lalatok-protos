@@ -24,6 +24,7 @@ message Profile {
   bool is_ambassador = 13;
   repeated LocalDistrict local_districts = 14;
   bool is_unlock_private_map = 15;
+  bool is_bot = 16;
 }
 
 service ProfileService {
