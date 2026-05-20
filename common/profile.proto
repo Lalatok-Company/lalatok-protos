@@ -25,6 +25,7 @@ message Profile {
   repeated LocalDistrict local_districts = 14;
   bool is_unlock_private_map = 15;
   bool is_bot = 16;
+  google.protobuf.Timestamp created_at = 17;
 }
 
 service ProfileService {
