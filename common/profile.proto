@@ -472,6 +472,7 @@ message ReferredUser {
   string status = 4;
   google.protobuf.Timestamp referred_at = 5;
   float match_score = 6;
+  string referral_id = 7;
 }
 
 // Referral banner messages
