@@ -502,7 +502,7 @@ message GetUnseenReferralsResponse {
 
 message MarkReferralBannersShownRequest {
   string account_id = 1;
-  repeated string referral_ids = 2;
+  repeated string account_ids = 2;
 }
 
 message MarkReferralBannersShownResponse {
