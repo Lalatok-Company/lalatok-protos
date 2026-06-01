@@ -23,6 +23,10 @@ message Profile {
   string country = 12;
   bool is_ambassador = 13;
   repeated LocalDistrict local_districts = 14;
+  bool is_unlock_private_map = 15;
+  bool is_bot = 16;
+  bool is_show_toast_msg_send_emoji = 17;
+  google.protobuf.Timestamp created_at = 18;
 }
 
 service ProfileService {
@@ -60,6 +64,12 @@ service ProfileService {
   // Get all referrals in the system (public version with limited access)
   rpc GetAllReferrals(GetAllReferralsRequest) returns (GetAllReferralsResponse);
 
+  // Referral banner methods
+  rpc GetReferrerByReferredAccount(GetReferrerByReferredAccountRequest) returns (GetReferrerByReferredAccountResponse);
+  rpc GetUnseenReferrals(GetUnseenReferralsRequest) returns (GetUnseenReferralsResponse);
+  rpc MarkReferralBannersShown(MarkReferralBannersShownRequest) returns (MarkReferralBannersShownResponse);
+  rpc MarkReferredBannerShown(MarkReferredBannerShownRequest) returns (MarkReferredBannerShownResponse);
+
   // Event management methods
   // Admin event management
   rpc CreateReferralEvent(CreateEventRequest) returns (ReferralEvent);
@@ -73,7 +83,10 @@ service ProfileService {
   rpc GetMyEventWallet(GetMyWalletRequest) returns (GetMyWalletResponse);
   rpc GetProfileByAccountIDs(GetProfileByAccountIDsRequest) returns (GetProfileByAccountIDsResponse);
   rpc UpdateProfileLocalDistrict(UpdateProfileLocalDistrictRequest) returns (UpdateProfileLocalDistrictResponse);
+  rpc UnlockPrivateMap(UnlockPrivateMapRequest) returns (UnlockPrivateMapResponse);
+  rpc GetBots(GetBotsRequest) returns (GetBotsResponse);
 }
+
 message UpdateProfileLocalDistrictRequest {
   string account_id = 1;
   int64 district_id = 2;
@@ -235,6 +248,7 @@ message UpdateRequest {
   string country = 11;
   google.protobuf.BoolValue is_ambassador = 12;
   repeated LocalDistrict local_districts = 13;
+  google.protobuf.BoolValue is_show_toast_msg_send_emoji = 14;
 }
 
 message UpdateResponse {
@@ -458,6 +472,49 @@ message ReferredUser {
   string status = 4;
   google.protobuf.Timestamp referred_at = 5;
   float match_score = 6;
+  string referral_id = 7;
+}
+
+// Referral banner messages
+message GetReferrerByReferredAccountRequest {
+  string account_id = 1;
+}
+
+message GetReferrerByReferredAccountResponse {
+  ReferredUserReferrer referrer = 1;
+  bool banner_shown = 2;
+}
+
+message ReferredUserReferrer {
+  string account_id = 1;
+  string username = 2;
+  string avatar_url = 3;
+}
+
+message GetUnseenReferralsRequest {
+  string account_id = 1;
+}
+
+message GetUnseenReferralsResponse {
+  repeated ReferredUser users = 1;
+  int32 total = 2;
+}
+
+message MarkReferralBannersShownRequest {
+  string account_id = 1;
+  repeated string account_ids = 2;
+}
+
+message MarkReferralBannersShownResponse {
+  bool success = 1;
+}
+
+message MarkReferredBannerShownRequest {
+  string account_id = 1;
+}
+
+message MarkReferredBannerShownResponse {
+  bool success = 1;
 }
 
 // Admin API messages
@@ -760,4 +817,21 @@ message LocalDistrict {
   int64 district_id = 1;
   int64 province_id = 2;
   int64 country_id = 3;
+}
+
+message UnlockPrivateMapRequest {
+  string account_id = 1;
+}
+
+message UnlockPrivateMapResponse {
+  bool success = 1;
+}
+
+message GetBotsRequest {
+  int32 page = 1;
+  int32 limit = 2;
+}
+message GetBotsResponse {
+  repeated Profile bots = 1;
+  int32 total = 2;
 }
