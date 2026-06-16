@@ -27,6 +27,7 @@ message Profile {
   bool is_bot = 16;
   bool is_show_toast_msg_send_emoji = 17;
   google.protobuf.Timestamp created_at = 18;
+  bool is_complete = 19;
 }
 
 service ProfileService {
@@ -254,6 +255,7 @@ message UpdateRequest {
   google.protobuf.BoolValue is_ambassador = 12;
   repeated LocalDistrict local_districts = 13;
   google.protobuf.BoolValue is_show_toast_msg_send_emoji = 14;
+  google.protobuf.BoolValue is_complete = 15;
 }
 
 message UpdateResponse {
