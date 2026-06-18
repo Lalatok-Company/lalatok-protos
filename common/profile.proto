@@ -27,6 +27,7 @@ message Profile {
   bool is_bot = 16;
   bool is_show_toast_msg_send_emoji = 17;
   google.protobuf.Timestamp created_at = 18;
+  bool is_complete = 19;
 }
 
 service ProfileService {
@@ -85,6 +86,11 @@ service ProfileService {
   rpc UpdateProfileLocalDistrict(UpdateProfileLocalDistrictRequest) returns (UpdateProfileLocalDistrictResponse);
   rpc UnlockPrivateMap(UnlockPrivateMapRequest) returns (UnlockPrivateMapResponse);
   rpc GetBots(GetBotsRequest) returns (GetBotsResponse);
+
+  // Engagement streak methods
+  rpc RecordEngagement(RecordEngagementRequest) returns (RecordEngagementResponse);
+  rpc GetEngagementStreak(GetEngagementStreakRequest) returns (GetEngagementStreakResponse);
+  rpc ListEngagementLogs(ListEngagementLogsRequest) returns (ListEngagementLogsResponse);
 }
 
 message UpdateProfileLocalDistrictRequest {
@@ -249,6 +255,7 @@ message UpdateRequest {
   google.protobuf.BoolValue is_ambassador = 12;
   repeated LocalDistrict local_districts = 13;
   google.protobuf.BoolValue is_show_toast_msg_send_emoji = 14;
+  google.protobuf.BoolValue is_complete = 15;
 }
 
 message UpdateResponse {
@@ -834,4 +841,54 @@ message GetBotsRequest {
 message GetBotsResponse {
   repeated Profile bots = 1;
   int32 total = 2;
+}
+
+// ========== ENGAGEMENT STREAK ==========
+
+message RecordEngagementRequest {
+  string account_id = 1;
+  string action_type = 2;       // "chat", "view_location", "checkin"
+  string engagement_date = 3;   // user's local date "2026-06-11"
+  string timezone = 4;          // IANA name "Asia/Ho_Chi_Minh"
+}
+
+message RecordEngagementResponse {
+  int32 streak_count = 1;
+  string last_engagement_date = 2;
+  bool is_new_streak = 3;
+  bool is_streak_broken = 4;
+}
+
+message GetEngagementStreakRequest {
+  string account_id = 1;
+}
+
+message GetEngagementStreakResponse {
+  int32 streak_count = 1;
+  string last_engagement_date = 2;
+  string last_action_type = 3;
+  string timezone = 4;
+  int32 longest_streak = 5;
+}
+
+message ListEngagementLogsRequest {
+  string account_id = 1;
+  int32 limit = 2;
+  int32 offset = 3;
+}
+
+message ListEngagementLogsResponse {
+  repeated EngagementLogEntry logs = 1;
+  int32 total = 2;
+}
+
+message EngagementLogEntry {
+  string id = 1;
+  string account_id = 2;
+  string action_type = 3;
+  string engagement_date = 4;
+  string timezone = 5;
+  string utc_timestamp = 6;
+  int32 streak_count_after = 7;
+  bool was_counted = 8;
 }
