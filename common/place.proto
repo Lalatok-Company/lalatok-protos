@@ -20,6 +20,7 @@ service PlaceService {
   rpc CreateCheckin (CreateCheckinReq) returns (CreateCheckinRes);
   rpc DeleteCheckin (DeleteCheckinReq) returns (DeleteCheckinRes);
   rpc UpdateCheckinDuration (UpdateCheckinDurationReq) returns (UpdateCheckinDurationRes);
+  rpc BatchUpdateCheckin (BatchUpdateCheckinReq) returns (BatchUpdateCheckinRes);
   rpc UpdateCheckinDraftStatus (UpdateCheckinDraftStatusReq) returns (UpdateCheckinDraftStatusRes);
   rpc GetDraftCheckinBeforeTime (GetDraftCheckinBeforeTimeReq) returns (GetDraftCheckinBeforeTimeRes);
   rpc UpdateDraftCheckinNotificationCount (UpdateDraftCheckinNotificationCountReq) returns (UpdateDraftCheckinNotificationCountRes);
@@ -254,6 +255,21 @@ message UpdateCheckinDurationReq {
 
 message UpdateCheckinDurationRes {
   bool status = 1;
+}
+
+message CheckinDurationUpdate {
+  string checkin_id = 1;
+  int64 total_duration_minutes = 2;
+}
+
+message BatchUpdateCheckinReq {
+  string account_id = 1; // from JWT; service enforces each checkin belongs to this account
+  repeated CheckinDurationUpdate updates = 2;
+}
+
+message BatchUpdateCheckinRes {
+  bool status = 1;
+  int32 updated_count = 2; // number of checkins actually updated (found + owned)
 }
 
 message UpdateCheckinDraftStatusReq {
