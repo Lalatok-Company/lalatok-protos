@@ -234,6 +234,7 @@ message GetCheckinByAccountReq {
   int64 province_id = 7;
   int64 country_id = 8;
   bool only_draft = 9;
+  optional bool is_update = 10;
 }
 
 message GetCheckinByAccountRes {
