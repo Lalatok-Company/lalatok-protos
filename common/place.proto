@@ -236,6 +236,7 @@ message GetCheckinByAccountReq {
   int64 country_id = 8;
   optional bool only_draft = 9;
   optional bool is_update = 10;
+  optional bool is_draft = 11;
 }
 
 message GetCheckinByAccountRes {
