@@ -36,6 +36,7 @@ service AuthService {
     rpc ChangeAdminPassword (ChangeAdminPasswordRequest) returns (ChangeAdminPasswordResponse);
     rpc LoginSocial (LoginSocialRequest) returns (LoginSocialResponse);
     rpc LinkSocial (LinkSocialRequest) returns (LinkSocialResponse);
+    rpc RegisterAdmin (RegisterAdminRequest) returns (RegisterAdminResponse);
 }
 
 // Login request and response
@@ -198,4 +199,23 @@ message LinkSocialRequest {
 
 message LinkSocialResponse {
     bool success = 1;
+}
+
+// Register admin request and response
+message RegisterAdminRequest {
+    string username = 1;
+    string password = 2;
+    string role = 3;
+    bool is_active = 4;
+}
+
+message RegisterAdminResponse {
+    Admin admin = 1;
+}
+
+message Admin {
+    string id = 1;
+    string username = 2;
+    string role = 3;
+    bool is_active = 4;
 }
