@@ -29,6 +29,7 @@ message Profile {
   bool is_show_toast_msg_send_emoji = 17;
   google.protobuf.Timestamp created_at = 18;
   bool is_complete = 19;
+  string reason_of_using = 20;
 }
 
 service ProfileService {
@@ -260,6 +261,7 @@ message UpdateRequest {
   repeated LocalDistrict local_districts = 13;
   google.protobuf.BoolValue is_show_toast_msg_send_emoji = 14;
   google.protobuf.BoolValue is_complete = 15;
+  string reason_of_using = 16;
 }
 
 message UpdateResponse {
