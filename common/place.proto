@@ -203,6 +203,7 @@ message Checkin {
   map<string, string> metadata = 7;
   int32 noti_count = 8;
   bool is_update = 9;
+  string updated_at = 10; // YYYY-MM-DD HH:MM:SS; empty when the checkin was never batch-updated
 }
 
 message CreateCheckinReq {

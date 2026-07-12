@@ -181,6 +181,7 @@ message ChangeAdminPasswordResponse {
 message LoginSocialRequest {
     string provider = 1;
     string access_token = 2;
+    string platform = 3;
 }
 
 message LoginSocialResponse {
@@ -195,6 +196,7 @@ message LinkSocialRequest {
     string provider = 1;
     string access_token = 2;
     string account_id = 3;
+    string platform = 4;
 }
 
 message LinkSocialResponse {
