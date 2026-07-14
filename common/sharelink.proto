@@ -15,6 +15,9 @@ service ShareLinkService {
 
   // Get share links by account ID and share type
   rpc GetShareLinkByAccount(GetShareLinkByAccountRequest) returns (GetShareLinkByAccountResponse);
+
+  // List share links with optional type/status filter (admin)
+  rpc ListShareLinks(ListShareLinksRequest) returns (ListShareLinksResponse);
 }
 
 enum ShareType {
@@ -43,6 +46,10 @@ message ShareLink {
   bool is_active = 12;
   google.protobuf.Timestamp updated_at = 13;
   google.protobuf.Timestamp expires_at = 14;
+  int32 click_count = 15;
+  int32 referral_count = 16;
+  int32 match_count = 17;
+  int32 completed_count = 18;
 }
 
 message CreateShareLinkRequest {
@@ -77,4 +84,18 @@ message GetShareLinkByAccountRequest {
 
 message GetShareLinkByAccountResponse {
   repeated ShareLink share_links = 1;
+}
+
+message ListShareLinksRequest {
+  ShareType share_type = 1; // SHARE_TYPE_UNSPECIFIED => all types
+  string status = 2;        // "active"|"inactive"|"all"; empty defaults to "active"
+  int32 page = 3;
+  int32 limit = 4;
+}
+
+message ListShareLinksResponse {
+  repeated ShareLink share_links = 1;
+  int32 total = 2;
+  int32 page = 3;
+  int32 limit = 4;
 }
