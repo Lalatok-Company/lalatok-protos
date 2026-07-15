@@ -126,6 +126,8 @@ service AdminService {
   rpc GetUserRegistrationStats(GetUserRegistrationStatsRequest) returns (GetUserRegistrationStatsResponse);
   // Get campaign performance statistics (clicks + install success) by date
   rpc GetCampaignPerformanceStats(GetCampaignPerformanceStatsRequest) returns (GetCampaignPerformanceStatsResponse);
+  // Get referral performance statistics (clicks + completed) by date
+  rpc GetReferralPerformance(GetReferralPerformanceRequest) returns (GetReferralPerformanceResponse);
   // Create a new user
   rpc CreateUser(CreateUserRequest) returns (CreateUserResponse);
 }
@@ -760,6 +762,22 @@ message CampaignPerformanceStat {
   string date = 1;    // DD/MM/YYYY format
   int32 clicks = 2;   // Total campaign clicks on this date
   int32 installs = 3; // Total install successes (matched) on this date
+}
+
+// Referral performance statistics messages (clicks + completed by date)
+message GetReferralPerformanceRequest {
+  string start_date = 1; // YYYY-MM-DD format
+  string end_date = 2;   // YYYY-MM-DD format
+}
+
+message GetReferralPerformanceResponse {
+  repeated ReferralPerformanceStat stats = 1;
+}
+
+message ReferralPerformanceStat {
+  string date = 1;     // DD/MM/YYYY format
+  int32 clicks = 2;    // Total referral clicks on this date
+  int32 completed = 3; // Total completed referrals on this date
 }
 
 // ========== EVENT MANAGEMENT ==========
