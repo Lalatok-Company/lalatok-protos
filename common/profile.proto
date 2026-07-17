@@ -30,6 +30,25 @@ message Profile {
   google.protobuf.Timestamp created_at = 18;
   bool is_complete = 19;
   string reason_of_using = 20;
+
+  // Phase 2 — about-me metadata (D-10) + main photo (D-11). About-me enums use
+  // plain string (empty = unset), validated against the D-12 taxonomy in the
+  // service. main_photo_url is DERIVED from profile_photos[0] and is populated
+  // by the service on read (not stored as a column).
+  string bio = 21;
+  string vibe = 22;                            // default "Just Saying Hi!" — cannot be deselected (D-10)
+  RepeatedStringValue languages = 23;          // ≤3 (D-12)
+  RepeatedStringValue interests = 24;          // ≤10 (D-12)
+  string looking_for = 25;
+  string zodiac = 26;
+  string education = 27;
+  string family_plans = 28;
+  string communication_style = 29;
+  string pets = 30;
+  string drinking = 31;
+  string smoking = 32;
+  string workout = 33;
+  string main_photo_url = 34;                  // derived from photo[0] (populated by the service)
 }
 
 service ProfileService {
@@ -96,6 +115,19 @@ service ProfileService {
   rpc RecordEngagement(RecordEngagementRequest) returns (RecordEngagementResponse);
   rpc GetEngagementStreak(GetEngagementStreakRequest) returns (GetEngagementStreakResponse);
   rpc ListEngagementLogs(ListEngagementLogsRequest) returns (ListEngagementLogsResponse);
+
+  // Phase 2 — multi-photo avatar (D-11) + view-count counter (D-13).
+  rpc ListProfilePhotos(ListProfilePhotosRequest) returns (ListProfilePhotosResponse);
+  rpc UploadProfilePhoto(UploadProfilePhotoRequest) returns (ProfilePhoto);
+  rpc DeleteProfilePhoto(DeleteProfilePhotoRequest) returns (DeleteProfilePhotoResponse);
+  rpc ReorderProfilePhotos(ReorderProfilePhotosRequest) returns (ReorderProfilePhotosResponse);
+  rpc SetMainProfilePhoto(SetMainProfilePhotoRequest) returns (ProfilePhoto);
+  rpc GetProfileViewCount(GetProfileViewCountRequest) returns (GetProfileViewCountResponse);
+
+  // Phase 2 — about-me taxonomy (D-12). Authoritative allowlist of valid values
+  // for each about-me field, consumed by the BFF/FE to render pickers + validate
+  // before PATCH /profile/me. DB-free (sourced from the in-service taxonomy map).
+  rpc GetAboutMeTaxonomy(GetAboutMeTaxonomyRequest) returns (GetAboutMeTaxonomyResponse);
 }
 
 message UpdateProfileLocalDistrictRequest {
@@ -266,6 +298,24 @@ message UpdateRequest {
   google.protobuf.BoolValue is_show_toast_msg_send_emoji = 14;
   google.protobuf.BoolValue is_complete = 15;
   string reason_of_using = 16;
+
+  // Phase 2 — about-me (D-10). Scalars use plain string (empty = "no update";
+  // vibe is non-clearable per D-10/Pitfall 6 — the service ignores empty vibe).
+  // Arrays use RepeatedStringValue (nil = omit; non-nil = replace).
+  // Validation against the D-12 taxonomy happens in the profile service.
+  string bio = 17;
+  string vibe = 18;
+  RepeatedStringValue languages = 19;
+  RepeatedStringValue interests = 20;
+  google.protobuf.StringValue looking_for = 21;
+  google.protobuf.StringValue zodiac = 22;
+  google.protobuf.StringValue education = 23;
+  google.protobuf.StringValue family_plans = 24;
+  google.protobuf.StringValue communication_style = 25;
+  google.protobuf.StringValue pets = 26;
+  google.protobuf.StringValue drinking = 27;
+  google.protobuf.StringValue smoking = 28;
+  google.protobuf.StringValue workout = 29;
 }
 
 message UpdateResponse {
@@ -974,4 +1024,97 @@ message EngagementLogEntry {
   string utc_timestamp = 6;
   int32 streak_count_after = 7;
   bool was_counted = 8;
+}
+
+// ========== Phase 2: Multi-photo avatar (D-11) + view-count counter (D-13) ==========
+// profile_photos is profile-owned ordered storage (D-11 Claude's Discretion).
+// First photo = main (shown on map + profile). Up to 6 photos. main_photo_url
+// on the Profile message above is DERIVED from photo[0] by the service.
+
+message ProfilePhoto {
+  string id = 1;
+  string account_id = 2;
+  string media_url = 3;
+  int32 position = 4;  // 0-based; position 0 = main
+}
+
+message ListProfilePhotosRequest {
+  string account_id = 1;
+}
+message ListProfilePhotosResponse {
+  repeated ProfilePhoto photos = 1;
+}
+
+message UploadProfilePhotoRequest {
+  string account_id = 1;
+  string media_url = 2;
+}
+
+message DeleteProfilePhotoRequest {
+  string account_id = 1;
+  string photo_id = 2;
+}
+message DeleteProfilePhotoResponse {
+  bool success = 1;
+}
+
+message ReorderProfilePhotosRequest {
+  string account_id = 1;
+  repeated string photo_ids = 2;  // new order; photo_ids[0] becomes main
+}
+message ReorderProfilePhotosResponse {
+  repeated ProfilePhoto photos = 1;
+}
+
+message SetMainProfilePhotoRequest {
+  string account_id = 1;
+  string photo_id = 2;
+}
+
+// View-count counter (D-13). Subscribed-only gate enforced by the service
+// (return PermissionDenied when is_subscription=false).
+message GetProfileViewCountRequest {
+  string account_id = 1;
+}
+message GetProfileViewCountResponse {
+  int32 count = 1;
+}
+
+// ========== Phase 2: About-me taxonomy (D-12) ==========
+// Authoritative allowlist consumed by the BFF/FE to render pickers + validate
+// before PATCH /profile/me. DB-free; sourced from the profile service's
+// package-level aboutmeTaxonomy map. keys are canonical snake_case (the same
+// keys validated by Update); the BFF converts to camelCase for the FE.
+
+// Section-structured, ordered taxonomy (PPT "Adding information" flow). The FE
+// renders fields in the exact order emitted by the service so pickers match the
+// design without client-side sorting.
+message GetAboutMeTaxonomyRequest {}
+
+message GetAboutMeTaxonomyResponse {
+  repeated AboutMeTaxonomySection sections = 1;
+}
+
+message AboutMeTaxonomySection {
+  string key = 1;                        // e.g. "about_me"
+  string label = 2;                      // e.g. "About me"
+  repeated AboutMeTaxonomyField fields = 3;
+}
+
+message AboutMeTaxonomyField {
+  string key = 1;                        // vibe, bio, languages, interests, looking_for, zodiac, education, family_plans, communication_style, pets, drinking, smoking, workout
+  string label = 2;                      // "Vibe", "Bio", ...
+  string type = 3;                       // "select_one" | "select_many" | "text"
+  string default = 4;                    // vibe only: "Just Saying Hi!"
+  bool deselectable = 5;                 // can the user clear it (false for vibe)
+  int32 max = 6;                         // select_many cap (languages 3, interests 10)
+  int32 max_length = 7;                  // text cap (bio 60)
+  repeated string values = 8;            // ordered allowed values (select_one/select_many)
+  repeated AboutMeTaxonomyCategory categories = 9;  // interests only (placeholder for now)
+}
+
+message AboutMeTaxonomyCategory {
+  string key = 1;
+  string label = 2;
+  repeated string values = 3;
 }
