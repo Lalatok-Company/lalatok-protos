@@ -34,6 +34,11 @@ service LocationService {
 
   rpc GetUserHaveSession(GetUserHaveSessionReq) returns (GetUserHaveSessionRes);
   rpc GetHeatmap(GetHeatmapReq) returns (GetHeatmapRes);
+
+  // Phase 2 — public-map explore. PURE-GEO over the existing H3 index; gender /
+  // vibe / visibility filters live in the BFF (location cannot filter by profile
+  // attributes — see D-03 / Pitfall 7). Mirrors GetAccountsInBox shape.
+  rpc ExploreNearby(ExploreNearbyReq) returns (ExploreNearbyRes);
 }
 
 message GetHeatmapReq {
@@ -296,4 +301,26 @@ message TrackingSession{
   bool is_moving = 6;
   google.protobuf.Timestamp session_start = 7;
   google.protobuf.Timestamp session_end = 8;
+}
+
+// Phase 2 — public-map explore (pure-geo only).
+// Request a list of nearby account IDs within `radius_meters` of (lat, lng),
+// post-filtered by exact Haversine distance. Gender / vibe / visibility
+// filters are BFF-side — location cannot query profile attributes.
+message ExploreNearbyReq {
+  double lat = 1;
+  double lng = 2;
+  double radius_meters = 3;  // ~3000 for the 3km explore (in METERS — see Pitfall 7)
+  int32 limit = 4;           // hard cap on returned candidates
+}
+
+message ExploreNearbyRes {
+  repeated NearbyUser users = 1;
+}
+
+message NearbyUser {
+  string account_id = 1;
+  double lat = 2;
+  double lng = 3;
+  double distance_meters = 4;  // METERS from the request origin
 }

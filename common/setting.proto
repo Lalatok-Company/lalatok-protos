@@ -125,6 +125,17 @@ message MeetupSetting {
   string expiration = 3;
 }
 
+// Glow Setting — explore-card glow badge + 2h/8h countdown timer (D-04 / W1).
+// Glow is an EXPLORE concept (not meetup): explore is now always-on with its
+// own discoverability opt-out, so glow lives in its own setting/table rather
+// than being bolted onto MeetupSetting. glow_state ∈ {off, forever, 2h, 8h};
+// glow_expires_at is null/zero when glow_state is off/forever (no expiry), and
+// computed (now+2h/8h) for the time-boxed states.
+message GlowSetting {
+  string glow_state = 1;                        // off | forever | 2h | 8h (deck slide 10)
+  google.protobuf.Timestamp glow_expires_at = 2;  // null/zero when glow_state is off/forever
+}
+
 // Combined Settings
 message AccountSettings {
   PrivacySetting privacy = 1;
@@ -133,6 +144,7 @@ message AccountSettings {
   MeetupSetting meetup = 4;
   repeated GhostModeSetting ghost_mode = 5;
   UserSOSSetting sos_setting = 6;
+  GlowSetting glow = 7;
 }
 
 // Request/Response Messages
@@ -168,6 +180,7 @@ message UpdateSettingRequest {
     UpdateGhostModeSetting ghost_mode = 5;
     MeetupSetting meetup = 6;
     UserSOSSetting sos_setting = 7;
+    GlowSetting glow = 8;
   }
 }
 
