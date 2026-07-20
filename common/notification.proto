@@ -30,6 +30,7 @@ service NotificationService {
   rpc SendBulkNotification(SendBulkNotificationReq) returns (SendBulkNotificationRes);
   rpc GetNotificationsByAccountID(GetNotificationsByAccountIDReq) returns (GetNotificationsByAccountIDRes);
   rpc MarkNotificationAsRead(MarkNotificationAsReadReq) returns (MarkNotificationAsReadRes);
+  rpc MarkNotificationAsUnRead(MarkNotificationAsUnReadReq) returns (MarkNotificationAsUnReadRes);
 }
 
 message DeviceToken {
@@ -135,6 +136,7 @@ message Notification {
 
 message MarkNotificationAsReadReq {
   repeated string ids = 1;
+  string account_id = 2;
 }
 
 message MarkNotificationAsReadRes {
@@ -153,4 +155,14 @@ message SendBulkNotificationRes {
   int32 success_count = 2;
   int32 failure_count = 3;
   repeated string failed_tokens = 4;
+}
+
+message MarkNotificationAsUnReadReq {
+  repeated string ids = 1;
+  string account_id = 2;
+}
+
+message MarkNotificationAsUnReadRes {
+  bool success = 1;
+  string error_message = 2;
 }
