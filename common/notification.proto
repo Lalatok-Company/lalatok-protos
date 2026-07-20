@@ -71,6 +71,8 @@ message SendNotificationReq {
   string body = 3;
   string image_url = 4;
   map<string, string> data = 5;
+  string target_type = 6;
+  string target_details = 7;
 }
 
 message SendNotificationToAccountIdReq {
