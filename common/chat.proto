@@ -28,6 +28,8 @@ service ChatService {
   rpc LikeMessage(LikeMessageRequest) returns (LikeMessageResponse) {}
   rpc UnlikeMessage(UnlikeMessageRequest) returns (UnlikeMessageResponse) {}
   rpc MarkMessagesAsRead(MarkMessagesAsReadRequest) returns (google.protobuf.Empty) {}
+  // Phase 3 — total unread messages across all of the account's rooms.
+  rpc GetUnreadMessageCount(GetUnreadMessageCountRequest) returns (GetUnreadMessageCountResponse) {}
 
   // Participant Status Management (Simplified Chat System)
   rpc UpdateParticipantStatus(UpdateParticipantStatusRequest) returns (google.protobuf.Empty) {}
@@ -232,6 +234,15 @@ message MarkMessagesAsReadRequest {
   string chat_room_id = 1;
   string account_id = 2;
   google.protobuf.Timestamp until_time = 3;
+}
+
+// Phase 3 — aggregate unread-message count for an account (summed across all rooms).
+message GetUnreadMessageCountRequest {
+  string account_id = 1;
+}
+
+message GetUnreadMessageCountResponse {
+  int32 unread_count = 1;
 }
 
 message GetChatRoomByParticipantsRequest {
