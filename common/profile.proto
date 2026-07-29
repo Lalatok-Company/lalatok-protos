@@ -122,6 +122,7 @@ service ProfileService {
   rpc DeleteProfilePhoto(DeleteProfilePhotoRequest) returns (DeleteProfilePhotoResponse);
   rpc ReorderProfilePhotos(ReorderProfilePhotosRequest) returns (ReorderProfilePhotosResponse);
   rpc SetMainProfilePhoto(SetMainProfilePhotoRequest) returns (ProfilePhoto);
+  rpc SetProfilePhotos(SetProfilePhotosRequest) returns (SetProfilePhotosResponse);
   rpc GetProfileViewCount(GetProfileViewCountRequest) returns (GetProfileViewCountResponse);
 
   // Phase 2 — about-me taxonomy (D-12). Authoritative allowlist of valid values
@@ -1069,6 +1070,14 @@ message ReorderProfilePhotosResponse {
 message SetMainProfilePhotoRequest {
   string account_id = 1;
   string photo_id = 2;
+}
+
+message SetProfilePhotosRequest {
+  string account_id = 1;
+  repeated string media_urls = 2;  // full desired photo list in final order; media_urls[0] = main. empty => server seeds a random default.
+}
+message SetProfilePhotosResponse {
+  repeated ProfilePhoto photos = 1;  // resulting full list (same ProfilePhoto shape as ReorderProfilePhotosResponse)
 }
 
 // View-count counter (D-13). Subscribed-only gate enforced by the service
