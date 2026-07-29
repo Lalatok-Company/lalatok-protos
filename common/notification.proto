@@ -114,11 +114,13 @@ message GetNotificationsByAccountIDReq {
   string account_id = 1;
   int32 limit = 2;
   string page_state_hex = 3;
+  repeated string filter_noti_types = 4;
 }
 
 message GetNotificationsByAccountIDRes {
   repeated Notification notifications = 1;
   string next_page_state_hex = 2;
+  int32 total_unread_count = 3;
 }
 
 message Notification {
