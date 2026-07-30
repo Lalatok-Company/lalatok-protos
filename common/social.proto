@@ -361,20 +361,24 @@ message GetReactionStatesResponse {
 }
 
 // ========== Phase 3: Unread Activity Badges ==========
-// Aggregate unread activity for the Activity tab. One RPC returning the total
-// plus the per-section breakdown avoids 3 separate BFF→social COUNT calls.
-// "Unread" = items newer than the account's activity_last_seen_at watermark
-// (stamped by MarkActivitySeen when the tab opens).
+// Aggregate activity counts for the Activity tab. One RPC returns the unread
+// total + per-section breakdown PLUS the lifetime section totals, avoiding 5
+// separate BFF→social COUNT calls.
+// "Unread" = items newer than the account's per-section watermarks (stamped by
+// MarkActivitySeen / the list-RPC side-effects when each list opens).
+// "Total*" = lifetime count of that section (no watermark) for section headers.
 
 message GetUnreadActivityCountRequest {
   string account_id = 1;
 }
 
 message GetUnreadActivityCountResponse {
-  int32 unread_count = 1;   // matches + reactions + bff_requests
-  int32 matches = 2;
-  int32 reactions = 3;
-  int32 bff_requests = 4;
+  int32 unread_count = 1;      // unread matches + reactions + bff_requests
+  int32 matches = 2;           // unread since the matches watermark
+  int32 reactions = 3;         // unread since the reactions watermark
+  int32 bff_requests = 4;      // unread since the bff watermark
+  int32 total_matches = 5;     // lifetime matches (either side of the pair)
+  int32 total_reactions = 6;   // lifetime active received reactions
 }
 
 message MarkActivitySeenReq {
