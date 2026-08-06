@@ -31,6 +31,7 @@ service NotificationService {
   rpc GetNotificationsByAccountID(GetNotificationsByAccountIDReq) returns (GetNotificationsByAccountIDRes);
   rpc MarkNotificationAsRead(MarkNotificationAsReadReq) returns (MarkNotificationAsReadRes);
   rpc MarkNotificationAsUnRead(MarkNotificationAsUnReadReq) returns (MarkNotificationAsUnReadRes);
+  rpc MarkAllNotificationsAsRead(MarkAllNotificationsAsReadReq) returns (MarkAllNotificationsAsReadRes);
 }
 
 message DeviceToken {
@@ -167,6 +168,15 @@ message MarkNotificationAsUnReadReq {
 }
 
 message MarkNotificationAsUnReadRes {
+  bool success = 1;
+  string error_message = 2;
+}
+
+message MarkAllNotificationsAsReadReq {
+  string account_id = 1;
+}
+
+message MarkAllNotificationsAsReadRes {
   bool success = 1;
   string error_message = 2;
 }
