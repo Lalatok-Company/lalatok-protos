@@ -319,6 +319,11 @@ message GetReceivedReactionsRequest {
   string account_id = 1;
   int32 page = 2;
   int32 limit = 3;
+  // peek = read the list WITHOUT advancing reactions_seen_at. Default false
+  // keeps the existing "opening the list clears the badge" behaviour for the
+  // FE list endpoint; the BFF's activity-badge validation pass sets it true so
+  // reconciling the counts cannot clear the badge it is about to report.
+  bool peek = 4;
 }
 message GetReceivedReactionsResponse {
   repeated string reactor_ids = 1;
@@ -337,6 +342,9 @@ message GetMatchesRequest {
   string account_id = 1;
   int32 page = 2;
   int32 limit = 3;
+  // peek = read the list WITHOUT advancing matches_seen_at. See the note on
+  // GetReceivedReactionsRequest.peek.
+  bool peek = 4;
 }
 message GetMatchesResponse {
   repeated string match_ids = 1;  // the OTHER side's account_id for each match
