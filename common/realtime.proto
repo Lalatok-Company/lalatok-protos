@@ -6,6 +6,7 @@ option go_package = "realtimepb/";
 
 service RealtimeService {
   rpc SendMessage (SendMessageReq) returns (SendMessageRes);
+  rpc GetPresence (GetPresenceReq) returns (GetPresenceRes);
 }
 
 message SendMessageReq {
@@ -15,4 +16,26 @@ message SendMessageReq {
 
 message SendMessageRes {
   bool success = 1;
+}
+
+// GetPresenceReq asks whether each account currently has a live Centrifugo
+// socket, i.e. is present in its user:<account_id> channel. Batched on purpose:
+// the caller (BFF presence reconcile) checks every online user each tick, so
+// the per-account fan-out belongs next to Centrifugo, not across the network.
+message GetPresenceReq {
+  repeated string account_ids = 1;
+}
+
+// GetPresenceRes reports presence per account, with three distinguishable
+// states — this is load-bearing, do not collapse it to a plain bool map:
+//
+//   - key present, value true  -> account has at least one live socket.
+//   - key present, value false -> account definitively has no live socket.
+//   - key ABSENT               -> presence could NOT be determined for that
+//                                 account (Centrifugo error). Callers MUST
+//                                 treat this as UNKNOWN and skip it, never as
+//                                 offline, so a Centrifugo blip cannot falsely
+//                                 reap a user who is actually connected.
+message GetPresenceRes {
+  map<string, bool> present = 1;
 }
