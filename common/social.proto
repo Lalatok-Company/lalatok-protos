@@ -48,6 +48,32 @@ service SocialService {
 
   // Mark friend profile as seen (first time viewing BFF profile)
   rpc MarkFriendProfileAsSeen(MarkFriendProfileAsSeenReq) returns (MarkFriendProfileAsSeenRes);
+
+  // Phase 2 — reactions → matching. Per D-09 the follow/friend RPCs above stay
+  // defined (legacy data is kept read-only); writes are disabled in code by
+  // plan 02-02 (return FAILED_PRECONDITION). Reactions replace follow/friend.
+  rpc SendReaction(SendReactionRequest) returns (SendReactionResponse);
+  rpc CancelReaction(CancelReactionRequest) returns (CancelReactionResponse);
+  rpc GetReceivedReactions(GetReceivedReactionsRequest) returns (GetReceivedReactionsResponse);
+  rpc GetSentReactions(GetSentReactionsRequest) returns (GetSentReactionsResponse);
+  rpc GetMatches(GetMatchesRequest) returns (GetMatchesResponse);
+  rpc GetReactionState(GetReactionStateRequest) returns (GetReactionStateResponse);
+  rpc GetReactionStates(GetReactionStatesRequest) returns (GetReactionStatesResponse);
+
+  // Phase 3 — aggregate unread activity count (matches + reactions + bff requests)
+  // and per-user activity-tab watermark. One aggregate RPC avoids 3x BFF→social
+  // round-trips (CONTEXT.md decision-for-plan).
+  rpc GetUnreadActivityCount(GetUnreadActivityCountRequest) returns (GetUnreadActivityCountResponse);
+  rpc MarkActivitySeen(MarkActivitySeenReq) returns (MarkActivitySeenRes);
+}
+
+// Phase 2 — reaction state for a (account_id, target_id) pair. Mirrors the
+// existing GetRelationshipByAccountId pattern; the batch GetReactionStates
+// (map<string, ReactionState>) avoids N+1 for card rendering.
+enum ReactionState {
+  REACTION_STATE_NONE = 0;
+  REACTION_STATE_SENT = 1;
+  REACTION_STATE_MATCHED = 2;
 }
 
 message FollowRequest {
@@ -262,5 +288,111 @@ message MarkFriendProfileAsSeenReq {
 }
 
 message MarkFriendProfileAsSeenRes {
+  bool success = 1;
+}
+
+// ========== Phase 2: Reactions / Matching ==========
+// One-way "interested" signal (D-05). Unlimited + revocable. A match is a
+// mutual reaction (A→B AND B→A), detected at write time (D-06). Canceling a
+// reaction dissolves any match it was part of (D-14).
+
+message SendReactionRequest {
+  string account_id = 1;
+  string target_id = 2;
+}
+message SendReactionResponse {
+  bool success = 1;
+  bool matched = 2;     // true iff a mutual match was created (or already existed)
+  string match_id = 3;  // populated when matched; empty otherwise
+}
+
+message CancelReactionRequest {
+  string account_id = 1;
+  string target_id = 2;
+}
+message CancelReactionResponse {
+  bool success = 1;
+  bool match_dissolved = 2;  // D-14 — true iff a match row was removed by this cancel
+}
+
+message GetReceivedReactionsRequest {
+  string account_id = 1;
+  int32 page = 2;
+  int32 limit = 3;
+  // peek = read the list WITHOUT advancing reactions_seen_at. Default false
+  // keeps the existing "opening the list clears the badge" behaviour for the
+  // FE list endpoint; the BFF's activity-badge validation pass sets it true so
+  // reconciling the counts cannot clear the badge it is about to report.
+  bool peek = 4;
+}
+message GetReceivedReactionsResponse {
+  repeated string reactor_ids = 1;
+}
+
+message GetSentReactionsRequest {
+  string account_id = 1;
+  int32 page = 2;
+  int32 limit = 3;
+}
+message GetSentReactionsResponse {
+  repeated string target_ids = 1;
+}
+
+message GetMatchesRequest {
+  string account_id = 1;
+  int32 page = 2;
+  int32 limit = 3;
+  // peek = read the list WITHOUT advancing matches_seen_at. See the note on
+  // GetReceivedReactionsRequest.peek.
+  bool peek = 4;
+}
+message GetMatchesResponse {
+  repeated string match_ids = 1;  // the OTHER side's account_id for each match
+}
+
+message GetReactionStateRequest {
+  string account_id = 1;
+  string target_id = 2;
+}
+message GetReactionStateResponse {
+  ReactionState state = 1;
+}
+
+// Batch per-pair state query — mirrors GetRelationshipByAccountIds shape.
+// Avoids N+1 gRPC for card rendering (explore list, etc.).
+message GetReactionStatesRequest {
+  string account_id = 1;
+  repeated string target_ids = 2;
+}
+message GetReactionStatesResponse {
+  map<string, ReactionState> states = 1;  // target_id → state
+}
+
+// ========== Phase 3: Unread Activity Badges ==========
+// Aggregate activity counts for the Activity tab. One RPC returns the unread
+// total + per-section breakdown PLUS the lifetime section totals, avoiding 5
+// separate BFF→social COUNT calls.
+// "Unread" = items newer than the account's per-section watermarks (stamped by
+// MarkActivitySeen / the list-RPC side-effects when each list opens).
+// "Total*" = lifetime count of that section (no watermark) for section headers.
+
+message GetUnreadActivityCountRequest {
+  string account_id = 1;
+}
+
+message GetUnreadActivityCountResponse {
+  int32 unread_count = 1;      // unread matches + reactions + bff_requests
+  int32 matches = 2;           // unread since the matches watermark
+  int32 reactions = 3;         // unread since the reactions watermark
+  int32 bff_requests = 4;      // unread since the bff watermark
+  int32 total_matches = 5;     // lifetime matches (either side of the pair)
+  int32 total_reactions = 6;   // lifetime active received reactions
+}
+
+message MarkActivitySeenReq {
+  string account_id = 1;
+}
+
+message MarkActivitySeenRes {
   bool success = 1;
 }
