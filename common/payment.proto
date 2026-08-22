@@ -94,6 +94,18 @@ message PaymentHistoryItem {
   string status = 5;
   string product_id = 6;
   google.protobuf.Timestamp created_at = 7;
+  // event_kind distinguishes the lifecycle event this row records: "purchase", "renew",
+  // "refund", "revoke".
+  string event_kind = 8;
+  // price_micros is micros of the currency unit as reported by Google androidpublisher v1
+  // PriceAmountMicros. Apple's JWS "price" field is milliunits and must be multiplied by
+  // 1000 by the producer before it lands here. Absent means the store did not report a
+  // price, not zero.
+  optional int64 price_micros = 9;
+  // currency is the ISO 4217 currency code.
+  optional string currency = 10;
+  google.protobuf.Timestamp period_start = 11;
+  google.protobuf.Timestamp period_end = 12;
 }
 
 message GetPaymentHistoryResponse {
@@ -106,6 +118,7 @@ message GetPaymentHistoryResponse {
 // --- GetUserSubscriptions ---
 message GetUserSubscriptionsRequest {
   string account_id = 1;
+  bool active_only = 2;
 }
 
 message SubscriptionItem {
@@ -124,6 +137,7 @@ message SubscriptionItem {
   bool is_in_billing_retry_period = 12;
   int32 expiration_intent = 13;
   google.protobuf.Timestamp recent_subscription_date = 14;
+  string account_id = 15;
 }
 
 message GetUserSubscriptionsResponse {
@@ -160,9 +174,13 @@ message GoogleServerNotificationResponse {
 
 // --- GetAllActiveSubscriptions ---
 message GetAllActiveSubscriptionsRequest {
-  // Empty request - returns all active subscriptions
+  int32 page = 1;
+  int32 limit = 2;
 }
 
 message GetAllActiveSubscriptionsResponse {
   repeated SubscriptionItem subscriptions = 1;
-} 
+  int32 total = 2;
+  int32 page = 3;
+  int32 limit = 4;
+}
