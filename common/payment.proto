@@ -186,11 +186,9 @@ message GetAllActiveSubscriptionsRequest {
 
 message GetAllActiveSubscriptionsResponse {
   repeated SubscriptionItem subscriptions = 1;
-<<<<<<< Updated upstream
   int32 total = 2;
   int32 page = 3;
   int32 limit = 4;
-=======
 }
 
 // --- Account Items & Glow Item ---
@@ -218,5 +216,4 @@ message GetAccountItemsRequest {
 
 message GetAccountItemsResponse {
   repeated AccountItemProto items = 1;
->>>>>>> Stashed changes
 }
