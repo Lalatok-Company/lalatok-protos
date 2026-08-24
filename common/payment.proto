@@ -51,6 +51,12 @@ service PaymentService {
 
   // GoogleServerNotification is the endpoint for Google Play server-to-server notifications.
   rpc GoogleServerNotification(GoogleServerNotificationRequest) returns (GoogleServerNotificationResponse);
+
+  // UseGlowItem deducts 1 glow item from the user's account_items balance.
+  rpc UseGlowItem(UseGlowItemRequest) returns (UseGlowItemResponse);
+
+  // GetAccountItems retrieves the account items (e.g., glow balance) for a user.
+  rpc GetAccountItems(GetAccountItemsRequest) returns (GetAccountItemsResponse);
 }
 
 // ========== MESSAGES ==========
@@ -180,7 +186,37 @@ message GetAllActiveSubscriptionsRequest {
 
 message GetAllActiveSubscriptionsResponse {
   repeated SubscriptionItem subscriptions = 1;
+<<<<<<< Updated upstream
   int32 total = 2;
   int32 page = 3;
   int32 limit = 4;
+=======
+}
+
+// --- Account Items & Glow Item ---
+message AccountItemProto {
+  int64 id = 1;
+  string user_id = 2;
+  string item_type = 3;
+  int32 quantity = 4;
+  google.protobuf.Timestamp created_at = 5;
+  google.protobuf.Timestamp updated_at = 6;
+}
+
+message UseGlowItemRequest {
+  string account_id = 1;
+}
+
+message UseGlowItemResponse {
+  bool success = 1;
+  int32 remaining_quantity = 2;
+}
+
+message GetAccountItemsRequest {
+  string account_id = 1;
+}
+
+message GetAccountItemsResponse {
+  repeated AccountItemProto items = 1;
+>>>>>>> Stashed changes
 }
