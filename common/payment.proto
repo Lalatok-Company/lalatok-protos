@@ -51,6 +51,25 @@ service PaymentService {
 
   // GoogleServerNotification is the endpoint for Google Play server-to-server notifications.
   rpc GoogleServerNotification(GoogleServerNotificationRequest) returns (GoogleServerNotificationResponse);
+
+  // Phase 5 — boost balance + the D-15 debit-then-write activation protocol
+  // (REQ-04). `activation_id` is a CLIENT-GENERATED UUID carried as the
+  // idempotency key, persisted UNIQUE alongside the balance debit in one local
+  // transaction. A replay of the same `activation_id` debits NOTHING and returns
+  // `already_applied = true`, so the debit path cannot be implemented without it.
+  //
+  // Ordering is fixed: debit first (ActivateBoost), then write the special glow
+  // in the setting service, then ConfirmBoostActivation. The reverse order hands
+  // out free glow whenever the debit fails.
+  //
+  // RefundBoost is the F1 compensation — issued ONLY on a definite setting-side
+  // failure (a gRPC status actually received), never on a timeout or any other
+  // unknown outcome. It credits +1, marks the activation compensated, and is
+  // itself idempotent on `activation_id`.
+  rpc GetBoostBalance(GetBoostBalanceRequest) returns (GetBoostBalanceResponse);
+  rpc ActivateBoost(ActivateBoostRequest) returns (ActivateBoostResponse);
+  rpc ConfirmBoostActivation(ConfirmBoostActivationRequest) returns (ConfirmBoostActivationResponse);
+  rpc RefundBoost(RefundBoostRequest) returns (RefundBoostResponse);
 }
 
 // ========== MESSAGES ==========
@@ -77,6 +96,12 @@ message CompletePurchaseRequest {
 
 message CompletePurchaseResponse {
   SubscriptionItem subscription = 1;
+  // Phase 5 — consumable (boost pack) purchases. `subscription` is UNSET for a
+  // consumable; `is_consumable` tells the caller which shape it got, and
+  // `boost_balance` reports the post-credit balance so one consumable purchase
+  // needs no second round trip to render the new count.
+  int32 boost_balance = 2;
+  bool is_consumable = 3;
 }
 
 // --- GetPaymentHistory ---
@@ -183,4 +208,48 @@ message GetAllActiveSubscriptionsResponse {
   int32 total = 2;
   int32 page = 3;
   int32 limit = 4;
+}
+
+// ========== Phase 5: Boosts (REQ-04 / D-15) ==========
+
+message GetBoostBalanceRequest {
+  string account_id = 1;
+}
+
+message GetBoostBalanceResponse {
+  int32 balance = 1;
+}
+
+// activation_id is a client-generated UUID and is the idempotency key for the
+// debit. Replay returns already_applied = true and debits nothing.
+message ActivateBoostRequest {
+  string account_id = 1;
+  string activation_id = 2;
+}
+
+message ActivateBoostResponse {
+  int32 balance = 1;          // balance AFTER the debit (or the unchanged balance on replay)
+  bool already_applied = 2;   // true iff this activation_id was already debited
+}
+
+// Marks the activation glow_applied — the second leg of debit-then-write
+// succeeded. A row left unconfirmed is a known-broken activation, diagnosable
+// and re-drivable without re-debiting.
+message ConfirmBoostActivationRequest {
+  string activation_id = 1;
+}
+
+message ConfirmBoostActivationResponse {
+  bool confirmed = 1;
+}
+
+// F1 compensation: credit +1 and mark the activation compensated. Idempotent on
+// activation_id — a second call reports compensated = true and credits nothing.
+message RefundBoostRequest {
+  string activation_id = 1;
+}
+
+message RefundBoostResponse {
+  int32 balance = 1;
+  bool compensated = 2;
 }
