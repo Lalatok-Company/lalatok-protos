@@ -20,6 +20,23 @@ service SettingService {
   rpc DeleteReport(DeleteReportRequest) returns (google.protobuf.Empty);
   rpc UpdateReport(UpdateReportRequest) returns (google.protobuf.Empty);
 
+  // Phase 5 — batched account-settings read (folded todo
+  // 2026-08-18-batched-setting-rpc-for-block-checks). Collapses the per-account
+  // GetAccountSetting fan-out in the BFF's explore block-filter and glow
+  // hydration to ONE call. NOTE: a new SettingService RPC must also be delegated
+  // in the combined server, not just the RPC struct, or the live service returns
+  // Unimplemented.
+  rpc GetAccountSettings(GetAccountSettingsRequest) returns (GetAccountSettingsResponse);
+
+  // Phase 5 — server-owned special-glow activation (REQ-03). Deliberately NOT
+  // the client-writable UpdateSetting glow oneof: the BFF needs a way to light
+  // SPECIAL glow that a client cannot drive directly. Duration is server-fixed
+  // at 90 minutes (1 boost = 90 min, deck slide 4) and the request carries NO
+  // duration field precisely so a client cannot mint glow time. Repeat calls
+  // STACK additively: an already-burning special glow is extended by 90 minutes
+  // from its current expiry rather than reset to now+90m.
+  rpc ActivateSpecialGlow(ActivateSpecialGlowRequest) returns (ActivateSpecialGlowResponse);
+
   // BFF Notification Settings
   rpc GetNotificationBffSetting(GetNotificationBffSettingRequest) returns (NotificationBffSetting);
   rpc UpdateNotificationBffSetting(UpdateNotificationBffSettingRequest) returns (google.protobuf.Empty);
@@ -131,9 +148,26 @@ message MeetupSetting {
 // than being bolted onto MeetupSetting. glow_state ∈ {off, forever, 2h, 8h};
 // glow_expires_at is null/zero when glow_state is off/forever (no expiry), and
 // computed (now+2h/8h) for the time-boxed states.
+//
+// Phase 5 — BASE / SPECIAL glow split (REQ-03). Fields 1-2 remain the
+// pre-existing BASE glow timer and are NEVER written by a boost. Fields 3-5 are
+// additive:
+//   * glow_enabled       — the authoritative base on/off boolean (two-tier-glow
+//                          todo). Independent of the base timer state.
+//   * special_glow_state — off | 90m. Written ONLY by boost activation
+//                          (ActivateSpecialGlow), never by the client-writable
+//                          UpdateSetting glow oneof.
+//   * special_glow_expires_at — decays resolve-on-read: masked when in the past,
+//                          never written back, no cron and no sweeper. Because
+//                          nothing writes back, a persisted expiry may be
+//                          past-but-non-zero — stacking must compare against
+//                          time.Now() on the RAW row, not the decayed read model.
 message GlowSetting {
-  string glow_state = 1;                        // off | forever | 2h | 8h (deck slide 10)
-  google.protobuf.Timestamp glow_expires_at = 2;  // null/zero when glow_state is off/forever
+  string glow_state = 1;                        // off | forever | 2h | 8h (deck slide 10) — BASE timer
+  google.protobuf.Timestamp glow_expires_at = 2;  // null/zero when glow_state is off/forever — BASE
+  bool glow_enabled = 3;                        // BASE glow on/off (authoritative boolean)
+  string special_glow_state = 4;                // off | 90m — boost-owned, server-written only
+  google.protobuf.Timestamp special_glow_expires_at = 5;  // resolve-on-read decay; zero when off
 }
 
 // Combined Settings
@@ -155,6 +189,31 @@ message GetAccountSettingRequest {
 
 message GetAccountSettingResponse {
   AccountSettings settings = 1;
+}
+
+// Phase 5 — batched form of the pair above (folded todo). Keyed account_id →
+// settings, mirroring social.proto's GetReactionStatesResponse map shape.
+// AccountSettings is PLURAL — the todo's `AccountSetting` singular is a typo and
+// no such message exists.
+message GetAccountSettingsRequest {
+  repeated string account_ids = 1;
+  repeated string types = 2;  // Filter by setting types (same semantics as the singular RPC)
+}
+
+message GetAccountSettingsResponse {
+  map<string, AccountSettings> settings = 1;  // account_id → settings
+}
+
+// Phase 5 — special-glow activation (REQ-03). No duration field by design: the
+// 90-minute grant is server-fixed so a client cannot mint glow time. Repeat
+// calls stack additively from the current expiry.
+message ActivateSpecialGlowRequest {
+  string account_id = 1;
+}
+
+message ActivateSpecialGlowResponse {
+  string special_glow_state = 1;                          // "90m" on success
+  google.protobuf.Timestamp special_glow_expires_at = 2;  // post-stack expiry
 }
 
 message GetNotificationBffSettingRequest {

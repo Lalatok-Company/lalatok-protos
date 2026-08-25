@@ -129,6 +129,13 @@ service ProfileService {
   // for each about-me field, consumed by the BFF/FE to render pickers + validate
   // before PATCH /profile/me. DB-free (sourced from the in-service taxonomy map).
   rpc GetAboutMeTaxonomy(GetAboutMeTaxonomyRequest) returns (GetAboutMeTaxonomyResponse);
+
+  // Phase 5 — profile completion rate (REQ-05 / D-12). Flat, equal-weight,
+  // versioned checklist computed in this service: rate = filled / total, every
+  // field worth the same. `vibe` is EXCLUDED from the checklist (D-18): it is
+  // non-clearable and defaults to `just_saying_hi`, so it is never empty and
+  // would inflate every rate by a constant.
+  rpc GetProfileCompletion(GetProfileCompletionRequest) returns (GetProfileCompletionResponse);
 }
 
 message UpdateProfileLocalDistrictRequest {
@@ -1120,10 +1127,39 @@ message AboutMeTaxonomyField {
   int32 max_length = 7;                  // text cap (bio 60)
   repeated string values = 8;            // ordered allowed values (select_one/select_many)
   repeated AboutMeTaxonomyCategory categories = 9;  // interests only (placeholder for now)
+  // Phase 5 — vibe monetization tier (D-06). Additive, flat slug list of the
+  // values in `values` (field 8) that require an active subscription. `values`
+  // deliberately stays `repeated string` so no existing pb consumer breaks, and
+  // tier is a purely additive attribute rather than a promotion of `values` to a
+  // message. Tier MUST be resolved by SLUG: the BFF's `taxonomyOptionI18n` table
+  // is keyed by English display text and silently falls back on drift, so keying
+  // tier off it would inherit that failure mode.
+  repeated string premium_values = 10;   // subset of `values` gated behind a subscription
 }
 
 message AboutMeTaxonomyCategory {
   string key = 1;
   string label = 2;
   repeated string values = 3;
+}
+
+// ========== Phase 5: Profile completion rate (REQ-05 / D-12 / D-18) ==========
+// Flat, equal-weight, versioned checklist. `rate` is an integer PERCENT 0-100
+// (filled / total, rounded), never a 0.0-1.0 fraction. `formula_version` is
+// carried in the response so the deck's 70% threshold cannot silently drift when
+// the checklist changes: a consumer comparing against 70 can assert which formula
+// produced the number. `vibe` is EXCLUDED from the checklist (D-18) — it is
+// non-clearable and always defaults to `just_saying_hi`, so counting it would add
+// a constant to every user's rate.
+
+message GetProfileCompletionRequest {
+  string account_id = 1;
+}
+
+message GetProfileCompletionResponse {
+  int32 rate = 1;                      // 0-100 percent, = round(filled_count / total_count * 100)
+  repeated string missing_fields = 2;  // canonical snake_case keys still empty
+  string formula_version = 3;          // bump whenever the checklist changes (threshold drift guard)
+  int32 filled_count = 4;
+  int32 total_count = 5;
 }
