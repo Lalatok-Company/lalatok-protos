@@ -52,8 +52,8 @@ service PaymentService {
   // GoogleServerNotification is the endpoint for Google Play server-to-server notifications.
   rpc GoogleServerNotification(GoogleServerNotificationRequest) returns (GoogleServerNotificationResponse);
 
-  // UseGlowItem deducts 1 glow item from the user's account_items balance.
-  rpc UseGlowItem(UseGlowItemRequest) returns (UseGlowItemResponse);
+  // UseItem deducts 1 item from the user's account_items balance.
+  rpc UseItem(UseItemRequest) returns (UseItemResponse);
 
   // GetAccountItems retrieves the account items (e.g., glow balance) for a user.
   rpc GetAccountItems(GetAccountItemsRequest) returns (GetAccountItemsResponse);
