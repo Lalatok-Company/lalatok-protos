@@ -68,10 +68,11 @@ service SocialService {
   rpc MarkActivitySeen(MarkActivitySeenReq) returns (MarkActivitySeenRes);
 
   // Phase 5 — free-tier reaction quotas + paid reveal (REQ-02 / D-01…D-04).
-  // RevealReaction spends one of the daily reveal budget to unlock the reactor
-  // behind one locked ReceivedReactionEntry; the reveal is PERMANENT for that
-  // reactor (D-03) — only the daily budget resets. GetReactionQuotas is the
-  // read-only banner query for both counters.
+  // RevealReaction spends one of the daily reveal budget and marks one
+  // ReceivedReactionEntry permanently revealed for that reactor (D-03) — only
+  // the daily budget resets. That flag is presentational: the reactor identity
+  // is already on the wire before the reveal (see ReceivedReactionEntry).
+  // GetReactionQuotas is the read-only banner query for both counters.
   rpc RevealReaction(RevealReactionRequest) returns (RevealReactionResponse);
   rpc GetReactionQuotas(GetReactionQuotasRequest) returns (GetReactionQuotasResponse);
 }
@@ -346,18 +347,21 @@ message GetReceivedReactionsRequest {
   bool peek = 4;
   // Phase 5 — the reveal-quota day, on the same BFF-computes-the-local-day
   // contract as SendReactionRequest. This RPC never SPENDS a reveal, so the
-  // date is only the key the daily reveal counters are read against; the lock
-  // itself is driven by the permanent reveal ledger and is date-free (D-04).
+  // date is only the key the daily reveal counters are read against; the
+  // `is_revealed` flag itself is driven by the permanent reveal ledger and is
+  // date-free.
   // An EMPTY value means "unlimited, do not count": no counter is read and
   // every entry comes back revealed. The BFF sets it from the actor's own
   // IsSubscription and is solely responsible for that call (T-05-76).
   string quota_date = 5;   // user's local date "2026-08-25"; empty = unlimited
 }
-// Phase 5 — BREAKING change to this response (D-04). `reactor_ids` (field 1) is
-// REMOVED and reserved: a free-tier caller must not receive the unpaywalled
-// reactor id list, and reserving the number/name means no pb consumer can
-// accidentally keep reading it. The list now returns opaque entries and the
-// reveal counters.
+// Phase 5 — BREAKING change to this response (supersedes D-04). `reactor_ids`
+// (field 1) is REMOVED and reserved: the flat id list was replaced by the
+// richer `entries` list plus the reveal counters, and reserving the number and
+// name means no pb consumer can accidentally keep reading the old shape.
+// Reserving it is a wire-shape decision ONLY and is NOT a privacy boundary —
+// see ReceivedReactionEntry: reactor identity is returned for unrevealed
+// entries too.
 message GetReceivedReactionsResponse {
   reserved 1;
   reserved "reactor_ids";
@@ -366,16 +370,28 @@ message GetReceivedReactionsResponse {
   int32 reveal_remaining = 4;  // reveals left today
 }
 
-// One received reaction, locked or revealed (D-04). `reactor_id` is populated
-// ONLY when `is_revealed` is true — a locked entry carries nothing but the
-// opaque `reaction_id` and `created_at`, so no photo, username, vibe or account
-// id leaves the server until a reveal is spent. The client renders its own
-// placeholder tile from `reaction_id` and taps it to reveal.
+// One received reaction, revealed or not (supersedes D-04).
+//
+// `reactor_id` is ALWAYS populated — for unrevealed entries exactly as for
+// revealed ones. `is_revealed` is a PRESENTATION flag ONLY: it tells the client
+// whether to render the tile blurred. It does NOT gate what the server sends.
+//
+// WARNING to future readers — this is deliberate, not an oversight. Reactor
+// identity IS on the wire for unrevealed entries, so the reveal paywall is
+// CLIENT-ENFORCED and is bypassable by anyone who reads the HTTP response. The
+// product owner accepted that tradeoff explicitly; this decision SUPERSEDES
+// D-04, under which the server withheld `reactor_id` until a reveal was spent.
+// Do NOT "fix" this back to server-side withholding without a new product
+// decision.
+//
+// `reveal_limit` / `reveal_remaining` still report the daily reveal budget, and
+// RevealReaction still spends it and still marks an entry permanently revealed
+// (D-03) — but those counters now drive UX only, they no longer gate data.
 message ReceivedReactionEntry {
   string reaction_id = 1;                     // opaque; the reveal handle
   google.protobuf.Timestamp created_at = 2;
-  bool is_revealed = 3;
-  string reactor_id = 4;                      // EMPTY unless is_revealed
+  bool is_revealed = 3;                       // presentation only: blur the tile?
+  string reactor_id = 4;                      // ALWAYS populated, revealed or not
 }
 
 message GetSentReactionsRequest {

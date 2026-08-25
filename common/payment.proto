@@ -257,6 +257,8 @@ message RefundBoostRequest {
 message RefundBoostResponse {
   int32 balance = 1;
   bool compensated = 2;
+}
+
 // --- Account Items & Glow Item ---
 message AccountItemProto {
   int64 id = 1;
