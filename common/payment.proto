@@ -194,18 +194,18 @@ message GetAllActiveSubscriptionsResponse {
 // --- Account Items & Glow Item ---
 message AccountItemProto {
   int64 id = 1;
-  string user_id = 2;
+  string account_id = 2;
   string item_type = 3;
   int32 quantity = 4;
-  google.protobuf.Timestamp created_at = 5;
-  google.protobuf.Timestamp updated_at = 6;
 }
 
-message UseGlowItemRequest {
+message UseItemRequest {
   string account_id = 1;
+  string item_type = 2;
+  int32 quantity = 3;
 }
 
-message UseGlowItemResponse {
+message UseItemResponse {
   bool success = 1;
   int32 remaining_quantity = 2;
 }
