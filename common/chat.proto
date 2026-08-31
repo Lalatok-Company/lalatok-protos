@@ -10,7 +10,7 @@ import "google/protobuf/empty.proto";
 // ChatService defines all chat-related operations
 service ChatService {
   // Chat Room Management
-  rpc CreateChatRoom(CreateChatRoomRequest) returns (CreateChatRoomResponse) {}
+  // CreateChatRoom removed (Phase 6, D-19 #4): it was declared but never implemented server-side, and its only caller path was unreachable because GetChatRoomByParticipants already creates a direct-pair room on demand. GetChatRoomByParticipants is now the single, documented creation path.
   rpc GetChatRoom(GetChatRoomRequest) returns (GetChatRoomResponse) {}
   rpc SearchChatRooms(SearchChatRoomsRequest) returns (SearchChatRoomsResponse) {}
   rpc SearchChatRoomsByUsername(SearchChatRoomsByUsernameRequest) returns (SearchChatRoomsByUsernameResponse) {}
@@ -209,6 +209,8 @@ message Participant {
   string status = 6;                 // joined, pending, declined, blocked (replaces separate chat request concept)
   string username = 7;
   string background = 8;
+  // Phase 6 (D-05): this account has already spent its single message into a not-yet-accepted room. Read by the BFF gate from the participants array it already fetches, so the second-message refusal costs no extra round trip and no speculative quota reserve.
+  bool opener_sent = 9;
 }
 
 message Message {

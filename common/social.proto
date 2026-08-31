@@ -75,6 +75,19 @@ service SocialService {
   // GetReactionQuotas is the read-only banner query for both counters.
   rpc RevealReaction(RevealReactionRequest) returns (RevealReactionResponse);
   rpc GetReactionQuotas(GetReactionQuotasRequest) returns (GetReactionQuotasResponse);
+
+  // Phase 6 (D-01/D-04) — an opener costs 1 of a 2/day budget and nothing from
+  // the 20/day reaction budget; the reserve and the unbilled reaction commit
+  // in one transaction so "unit reserved but reaction never recorded" cannot
+  // happen. Only the social->message boundary needs compensation.
+  rpc SendChatOpener(SendChatOpenerRequest) returns (SendChatOpenerResponse);
+  // Phase 6 (D-04) — compensating release: rolls back the reserved unit when
+  // the message write on the message-service side fails after the reserve
+  // succeeded here.
+  rpc ReleaseChatOpener(ReleaseChatOpenerRequest) returns (ReleaseChatOpenerResponse);
+  // Phase 6 (D-16) — read-only banner query for the opener budget, mirroring
+  // GetReactionQuotas's shape.
+  rpc GetChatOpenQuotaCount(GetChatOpenQuotaCountRequest) returns (GetChatOpenQuotaCountResponse);
 }
 
 // Phase 2 — reaction state for a (account_id, target_id) pair. Mirrors the
@@ -495,4 +508,54 @@ message GetReactionQuotasResponse {
   int32 send_remaining = 2;
   int32 reveal_limit = 3;
   int32 reveal_remaining = 4;
+  // Phase 6 (D-16) — additive block: the chat-opener budget rendered on the
+  // same banner payload since both budgets reset on the same clock.
+  int32 chat_opener_limit = 5;
+  int32 chat_opener_remaining = 6;
+}
+
+// ========== Phase 6: Chat-Opener Budget (D-01..D-04) ==========
+// SendChatOpener reserves 1 of the 2/day opener budget and records the same
+// unbilled reaction SendReaction would, in one transaction (RESEARCH §3.1).
+// An empty quota_date means "unlimited, do not count" -- the same contract
+// SendReactionRequest already uses (D-03).
+message SendChatOpenerRequest {
+  string account_id = 1;
+  string target_id = 2;
+  string quota_date = 3;   // user's local date "2026-08-25"; empty = unlimited/do-not-count
+  string timezone = 4;     // IANA name "Asia/Ho_Chi_Minh"
+}
+message SendChatOpenerResponse {
+  bool success = 1;
+  bool matched = 2;     // true iff a mutual match was created (or already existed)
+  string match_id = 3;  // populated when matched; empty otherwise
+  int32 quota_limit = 4;
+  int32 quota_remaining = 5;
+  bool quota_unlimited = 6;
+  bool reaction_already_existed = 7; // true when the sender had already reacted to the target -- no second reaction was recorded (SC4)
+  bool revealed = 8;                 // true when this call wrote the free permanent reveal row (D-12)
+}
+
+// ReleaseChatOpener is the compensating release for D-04's reserve/commit
+// split: rolls back the reserved unit when the message-service write fails
+// after the reserve succeeded.
+message ReleaseChatOpenerRequest {
+  string account_id = 1;
+  string target_id = 2;
+  string quota_date = 3;
+}
+message ReleaseChatOpenerResponse {
+  bool success = 1;
+  int32 count = 2;             // the post-decrement counter
+  bool reaction_revoked = 3;   // false when the pair had already matched and the reaction was deliberately left intact (D-09)
+}
+
+// GetChatOpenQuotaCount is a read-only counter lookup, used internally by the
+// combined SendChatOpener transaction and available standalone.
+message GetChatOpenQuotaCountRequest {
+  string account_id = 1;
+  string quota_date = 2;
+}
+message GetChatOpenQuotaCountResponse {
+  int32 count = 1;
 }
