@@ -197,6 +197,11 @@ message ChatRoom {
   google.protobuf.Timestamp updated_at = 11;
   bool is_group = 16;
   int32 unread_count = 17;
+  // Phase 7 (D-07): how this room was created. `direct_request` means it was opened through
+  // POST /chat/direct and the one-message-until-accepted rule applies; anything else, INCLUDING
+  // the empty string on every room that predates this field, means an ordinary unrestricted room
+  // (D-10's grandfather clause, no backfill).
+  string origin = 18;
 }
 
 // Participant represents a user in a chat room with their status and roles
@@ -249,11 +254,24 @@ message GetUnreadMessageCountResponse {
 
 message GetChatRoomByParticipantsRequest {
   repeated string participant_ids = 1;
+  // Phase 7 (D-05): when true, do not create a room on a miss; answer `exists = false` instead.
+  // Default false is exactly today's get-or-create behaviour, so every existing caller is
+  // unaffected.
+  bool suppress_auto_create = 2;
+  // Phase 7 (D-07): the origin to stamp on a room this call actually CREATES. Ignored when an
+  // existing room is found; origin is set-once at creation and is never overwritten by a later
+  // lookup. Empty means the message service's own default.
+  string origin = 3;
 }
 
 message GetChatRoomByParticipantsResponse {
   bool exists = 1;
   ChatRoom chat_room = 2;
+  // Phase 7 (D-10): true only when THIS call created the room. The repository has always
+  // returned this bool internally (chat_repository.go, the found branch returns false and
+  // prepareAndCreateNewChatRoom returns true); the RPC layer discarded it and hardcoded
+  // `exists: true`, which made "found" and "just created" indistinguishable on the wire.
+  bool is_created = 3;
 }
 
 // Participant Status Management
