@@ -55,7 +55,7 @@ service PaymentService {
   // UseItem deducts 1 item from the user's account_items balance.
   rpc UseItem(UseItemRequest) returns (UseItemResponse);
 
-  // GetAccountItems retrieves the account items (e.g., glow balance) for a user.
+  // GetAccountItems retrieves the account items (e.g., boost balance) for a user.
   rpc GetAccountItems(GetAccountItemsRequest) returns (GetAccountItemsResponse);
 
   // Boost lifecycle (REQ-03). A boost is a STATEFUL 8-hour unit, not an
@@ -219,9 +219,9 @@ message GetAllActiveSubscriptionsResponse {
   int32 limit = 4;
 }
 
-// --- Account Items & Glow Item ---
+// --- Account Items & Boost Item ---
 message AccountItemProto {
-  int64 id = 1;
+  string id = 1;
   string account_id = 2;
   string item_type = 3;
   // quantity is the TOTAL the account owns, including units currently running
