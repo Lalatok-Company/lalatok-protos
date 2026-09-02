@@ -52,29 +52,33 @@ service PaymentService {
   // GoogleServerNotification is the endpoint for Google Play server-to-server notifications.
   rpc GoogleServerNotification(GoogleServerNotificationRequest) returns (GoogleServerNotificationResponse);
 
-  // Phase 5 — boost balance + the D-15 debit-then-write activation protocol
-  // (REQ-04). `activation_id` is a CLIENT-GENERATED UUID carried as the
-  // idempotency key, persisted UNIQUE alongside the balance debit in one local
-  // transaction. A replay of the same `activation_id` debits NOTHING and returns
-  // `already_applied = true`, so the debit path cannot be implemented without it.
-  //
-  // Ordering is fixed: debit first (ActivateBoost), then write the special glow
-  // in the setting service, then ConfirmBoostActivation. The reverse order hands
-  // out free glow whenever the debit fails.
-  //
-  // RefundBoost is the F1 compensation — issued ONLY on a definite setting-side
-  // failure (a gRPC status actually received), never on a timeout or any other
-  // unknown outcome. It credits +1, marks the activation compensated, and is
-  // itself idempotent on `activation_id`.
-  rpc GetBoostBalance(GetBoostBalanceRequest) returns (GetBoostBalanceResponse);
-  rpc ActivateBoost(ActivateBoostRequest) returns (ActivateBoostResponse);
-  rpc ConfirmBoostActivation(ConfirmBoostActivationRequest) returns (ConfirmBoostActivationResponse);
-  rpc RefundBoost(RefundBoostRequest) returns (RefundBoostResponse);
   // UseItem deducts 1 item from the user's account_items balance.
   rpc UseItem(UseItemRequest) returns (UseItemResponse);
 
   // GetAccountItems retrieves the account items (e.g., boost balance) for a user.
   rpc GetAccountItems(GetAccountItemsRequest) returns (GetAccountItemsResponse);
+
+  // Boost lifecycle (REQ-03). A boost is a STATEFUL 8-hour unit, not an
+  // instant spend: the quantity in account_items drops only when a unit's
+  // timer actually runs out, so activating one never reduces what the user
+  // sees they own. Units are DISCRETE -- activating a second boost queues it
+  // behind the first rather than merging into one longer run.
+  //
+  // The payment service owns the clock as well as the quantity, so settling an
+  // expiry ("mark consumed AND decrement") is one local transaction with no
+  // cross-service race. The setting service's special-glow columns are a
+  // PROJECTION of what these RPCs return, written by the caller.
+  rpc ActivateBoost(ActivateBoostRequest) returns (BoostStateResponse);
+  rpc PauseBoost(PauseBoostRequest) returns (BoostStateResponse);
+  rpc ResumeBoost(ResumeBoostRequest) returns (BoostStateResponse);
+  rpc GetBoostState(GetBoostStateRequest) returns (BoostStateResponse);
+
+  // SettleExpiredBoosts is the sweep behind the "decrement on expiry" rule. It
+  // marks every activation whose expires_at has passed as consumed, decrements
+  // its account_items quantity, and promotes that account's next queued unit to
+  // running. It returns the affected accounts so the caller can re-project the
+  // special glow for each. Idempotent: a second run settles nothing.
+  rpc SettleExpiredBoosts(SettleExpiredBoostsRequest) returns (SettleExpiredBoostsResponse);
 }
 
 // ========== MESSAGES ==========
@@ -215,56 +219,23 @@ message GetAllActiveSubscriptionsResponse {
   int32 limit = 4;
 }
 
-// ========== Phase 5: Boosts (REQ-04 / D-15) ==========
-
-message GetBoostBalanceRequest {
-  string account_id = 1;
-}
-
-message GetBoostBalanceResponse {
-  int32 balance = 1;
-}
-
-// activation_id is a client-generated UUID and is the idempotency key for the
-// debit. Replay returns already_applied = true and debits nothing.
-message ActivateBoostRequest {
-  string account_id = 1;
-  string activation_id = 2;
-}
-
-message ActivateBoostResponse {
-  int32 balance = 1;          // balance AFTER the debit (or the unchanged balance on replay)
-  bool already_applied = 2;   // true iff this activation_id was already debited
-}
-
-// Marks the activation glow_applied — the second leg of debit-then-write
-// succeeded. A row left unconfirmed is a known-broken activation, diagnosable
-// and re-drivable without re-debiting.
-message ConfirmBoostActivationRequest {
-  string activation_id = 1;
-}
-
-message ConfirmBoostActivationResponse {
-  bool confirmed = 1;
-}
-
-// F1 compensation: credit +1 and mark the activation compensated. Idempotent on
-// activation_id — a second call reports compensated = true and credits nothing.
-message RefundBoostRequest {
-  string activation_id = 1;
-}
-
-message RefundBoostResponse {
-  int32 balance = 1;
-  bool compensated = 2;
-}
-
 // --- Account Items & Boost Item ---
 message AccountItemProto {
   string id = 1;
   string account_id = 2;
   string item_type = 3;
+  // quantity is the TOTAL the account owns, including units currently running
+  // or paused. It drops only when a unit is fully consumed (its timer ran out),
+  // never at activation -- so a user with 3 boosts who starts one still reads 3.
   int32 quantity = 4;
+
+  // Additive lifecycle detail (REQ-03). Populated for consumable item types that
+  // have a running timer (today: "boost"); left zero for plain items.
+  int32 in_use = 5;                              // units in state active|queued|paused
+  int32 available = 6;                           // quantity - in_use: units not yet started
+  string state = 7;                              // off | running | paused
+  google.protobuf.Timestamp active_expires_at = 8; // when the RUNNING unit ends; unset when off/paused
+  int32 remaining_seconds = 9;                   // time banked on a PAUSED unit; 0 otherwise
 }
 
 message UseItemRequest {
@@ -284,4 +255,59 @@ message GetAccountItemsRequest {
 
 message GetAccountItemsResponse {
   repeated AccountItemProto items = 1;
+}
+
+// ========== Boost lifecycle (REQ-03) ==========
+
+// BoostStateResponse is the single shape every lifecycle RPC answers with, so
+// a caller never has to stitch together two reads to know what to project onto
+// the special glow.
+message BoostStateResponse {
+  string state = 1;                              // off | running | paused
+  google.protobuf.Timestamp expires_at = 2;      // end of the RUNNING unit; unset when off/paused
+  int32 remaining_seconds = 3;                   // banked time on a PAUSED unit; 0 otherwise
+  int32 quantity = 4;                            // TOTAL owned, unchanged by activation
+  int32 in_use = 5;                              // units active|queued|paused
+  int32 available = 6;                           // units not yet started
+  int32 queued = 7;                              // units waiting behind the running one
+
+  // glow_ends_at is when the LAST queued unit finishes -- running expiry plus
+  // every queued unit's duration. This is what the special glow should be set
+  // to, NOT expires_at: a user with two boosts queued is glowing continuously
+  // for 16 hours, not 8.
+  google.protobuf.Timestamp glow_ends_at = 8;
+}
+
+message ActivateBoostRequest {
+  string account_id = 1;
+}
+
+message PauseBoostRequest {
+  string account_id = 1;
+}
+
+message ResumeBoostRequest {
+  string account_id = 1;
+}
+
+message GetBoostStateRequest {
+  string account_id = 1;
+}
+
+message SettleExpiredBoostsRequest {
+  // limit caps how many activations one sweep settles; 0 means the server
+  // default. Bounded so a backlog cannot turn one tick into a long transaction.
+  int32 limit = 1;
+}
+
+// SettledBoost reports one account whose boost state changed during the sweep,
+// carrying the POST-settlement projection so the caller can write the special
+// glow without a follow-up read.
+message SettledBoost {
+  string account_id = 1;
+  BoostStateResponse state = 2;
+}
+
+message SettleExpiredBoostsResponse {
+  repeated SettledBoost settled = 1;
 }

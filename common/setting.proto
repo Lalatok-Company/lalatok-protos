@@ -37,6 +37,20 @@ service SettingService {
   // from its current expiry rather than reset to now+90m.
   rpc ActivateSpecialGlow(ActivateSpecialGlowRequest) returns (ActivateSpecialGlowResponse);
 
+  // SetSpecialGlow SUPERSEDES ActivateSpecialGlow (REQ-03, boost lifecycle).
+  //
+  // The payment service now owns the boost clock, so the duration is no longer
+  // this service's to compute: the caller supplies the absolute end time it
+  // already calculated from the running unit plus everything queued behind it.
+  // This service just persists the projection.
+  //
+  // It is NOT additive -- it ASSIGNS. Stacking is resolved upstream where the
+  // discrete units live; adding here as well would double-count. A request with
+  // state "off" (or an unset glow_ends_at) CLEARS the special pair, which is
+  // what a pause and a fully-settled boost both need and what
+  // ActivateSpecialGlow could never express.
+  rpc SetSpecialGlow(SetSpecialGlowRequest) returns (SetSpecialGlowResponse);
+
   // BFF Notification Settings
   rpc GetNotificationBffSetting(GetNotificationBffSettingRequest) returns (NotificationBffSetting);
   rpc UpdateNotificationBffSetting(UpdateNotificationBffSettingRequest) returns (google.protobuf.Empty);
@@ -214,6 +228,23 @@ message ActivateSpecialGlowRequest {
 message ActivateSpecialGlowResponse {
   string special_glow_state = 1;                          // "90m" on success
   google.protobuf.Timestamp special_glow_expires_at = 2;  // post-stack expiry
+}
+
+// SetSpecialGlow ASSIGNS the special pair from a projection the caller already
+// computed. state is one of off | 8h | paused:
+//   - "8h"     -> glowing until glow_ends_at (which MUST be set)
+//   - "paused" -> banked, not burning; the pair is cleared so the card stops
+//                 glowing, and the remaining time lives in the payment service
+//   - "off"    -> cleared outright (no units left, or a settled boost)
+message SetSpecialGlowRequest {
+  string account_id = 1;
+  string state = 2;
+  google.protobuf.Timestamp glow_ends_at = 3;
+}
+
+message SetSpecialGlowResponse {
+  string special_glow_state = 1;
+  google.protobuf.Timestamp special_glow_expires_at = 2;
 }
 
 message GetNotificationBffSettingRequest {
