@@ -111,6 +111,7 @@ message CompletePurchaseResponse {
   // needs no second round trip to render the new count.
   int32 boost_balance = 2;
   bool is_consumable = 3;
+  repeated AccountItemProto items = 4;
 }
 
 // --- GetPaymentHistory ---
