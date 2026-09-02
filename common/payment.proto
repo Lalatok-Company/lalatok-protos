@@ -73,7 +73,7 @@ service PaymentService {
   // UseItem deducts 1 item from the user's account_items balance.
   rpc UseItem(UseItemRequest) returns (UseItemResponse);
 
-  // GetAccountItems retrieves the account items (e.g., glow balance) for a user.
+  // GetAccountItems retrieves the account items (e.g., boost balance) for a user.
   rpc GetAccountItems(GetAccountItemsRequest) returns (GetAccountItemsResponse);
 }
 
@@ -259,9 +259,9 @@ message RefundBoostResponse {
   bool compensated = 2;
 }
 
-// --- Account Items & Glow Item ---
+// --- Account Items & Boost Item ---
 message AccountItemProto {
-  int64 id = 1;
+  string id = 1;
   string account_id = 2;
   string item_type = 3;
   int32 quantity = 4;
