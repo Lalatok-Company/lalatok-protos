@@ -49,6 +49,9 @@ message Profile {
   string smoking = 32;
   string workout = 33;
   string main_photo_url = 34;                  // derived from photo[0] (populated by the service)
+
+  // Internal only. The BFF never serializes it to mobile clients.
+  bool is_ai_persona = 35;
 }
 
 service ProfileService {
@@ -110,6 +113,9 @@ service ProfileService {
   rpc UpdateProfileLocalDistrict(UpdateProfileLocalDistrictRequest) returns (UpdateProfileLocalDistrictResponse);
   rpc UnlockPrivateMap(UnlockPrivateMapRequest) returns (UnlockPrivateMapResponse);
   rpc GetBots(GetBotsRequest) returns (GetBotsResponse);
+  // Internal only, mirrors GetBots. Paged list of is_ai_persona=true
+  // profiles, consumed by the BFF's persona registry cache.
+  rpc GetAiPersonas(GetAiPersonasRequest) returns (GetAiPersonasResponse);
 
   // Engagement streak methods
   rpc RecordEngagement(RecordEngagementRequest) returns (RecordEngagementResponse);
@@ -981,6 +987,15 @@ message GetBotsRequest {
 }
 message GetBotsResponse {
   repeated Profile bots = 1;
+  int32 total = 2;
+}
+
+message GetAiPersonasRequest {
+  int32 page = 1;
+  int32 limit = 2;
+}
+message GetAiPersonasResponse {
+  repeated Profile personas = 1;
   int32 total = 2;
 }
 
