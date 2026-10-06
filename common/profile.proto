@@ -116,6 +116,20 @@ service ProfileService {
   // Internal only, mirrors GetBots. Paged list of is_ai_persona=true
   // profiles, consumed by the BFF's persona registry cache.
   rpc GetAiPersonas(GetAiPersonasRequest) returns (GetAiPersonasResponse);
+  // Admin only. Creates an AI persona profile with no login account; photos
+  // and settings are saved in one transaction and the server generates the id.
+  rpc CreateAiPersona(CreateAiPersonaRequest) returns (CreateAiPersonaResponse);
+  // Settings and status for the given persona ids. Ids that are not personas
+  // are left out. A persona with no saved settings comes back active with an
+  // empty character.
+  rpc GetAiPersonaConfigs(GetAiPersonaConfigsRequest) returns (GetAiPersonaConfigsResponse);
+  // Admin only. Saves a persona's conversation character and test-account flag.
+  rpc UpdateAiPersonaConfig(UpdateAiPersonaConfigRequest) returns (AiPersonaConfig);
+  // Admin only. Turns a persona's automated chat on or off.
+  rpc SetAiPersonaActive(SetAiPersonaActiveRequest) returns (AiPersonaConfig);
+  // Admin only. Deletes an AI persona profile with its photos and settings.
+  // Ids that are not personas are refused.
+  rpc DeleteAiPersona(DeleteAiPersonaRequest) returns (DeleteResponse);
 
   // Engagement streak methods
   rpc RecordEngagement(RecordEngagementRequest) returns (RecordEngagementResponse);
@@ -174,6 +188,8 @@ service AdminService {
   rpc GetCampaignPerformanceStats(GetCampaignPerformanceStatsRequest) returns (GetCampaignPerformanceStatsResponse);
   // Get referral performance statistics (clicks + completed) by date
   rpc GetReferralPerformance(GetReferralPerformanceRequest) returns (GetReferralPerformanceResponse);
+  // Get user retention statistics for cohort analysis (Day 1, 7, 14, 30)
+  rpc GetUserRetentionStats(GetUserRetentionStatsRequest) returns (GetUserRetentionStatsResponse);
   // Create a new user
   rpc CreateUser(CreateUserRequest) returns (CreateUserResponse);
 }
@@ -999,6 +1015,74 @@ message GetAiPersonasResponse {
   int32 total = 2;
 }
 
+// How an AI persona talks in chat. Kept out of Profile so it never reaches a mobile response.
+message AiPersonaCharacter {
+  string nickname = 1;
+  string personality = 2;
+  string texting_style = 3;
+  string emoji_level = 4;
+  string reply_length = 5;
+  string occupation = 6;
+  string backstory = 7;
+  string avoid_topics = 8;
+  string extra_instructions = 9;
+}
+
+// An AI persona's status and conversation settings.
+message AiPersonaConfig {
+  string account_id = 1;
+  bool active = 2;
+  bool is_test_account = 3;
+  AiPersonaCharacter character = 4;
+  string updated_by = 5;
+  // RFC3339 UTC; empty when the persona's settings were never saved.
+  string updated_at = 6;
+}
+
+message CreateAiPersonaRequest {
+  string username = 1;
+  string birth_day = 2;
+  string gender = 3;
+  string country = 4;
+  string mood = 5;
+  repeated string media_urls = 6;
+  bool is_test_account = 7;
+  AiPersonaCharacter character = 8;
+  string created_by = 9;
+}
+
+message CreateAiPersonaResponse {
+  Profile profile = 1;
+  AiPersonaConfig config = 2;
+}
+
+message GetAiPersonaConfigsRequest {
+  repeated string account_ids = 1;
+}
+
+message GetAiPersonaConfigsResponse {
+  repeated AiPersonaConfig configs = 1;
+}
+
+message UpdateAiPersonaConfigRequest {
+  string account_id = 1;
+  // Unset keeps the stored character; set replaces every character field.
+  AiPersonaCharacter character = 2;
+  // Unset keeps the stored value.
+  google.protobuf.BoolValue is_test_account = 3;
+  string updated_by = 4;
+}
+
+message SetAiPersonaActiveRequest {
+  string account_id = 1;
+  bool active = 2;
+  string updated_by = 3;
+}
+
+message DeleteAiPersonaRequest {
+  string account_id = 1;
+}
+
 // ========== ENGAGEMENT STREAK ==========
 
 message RecordEngagementRequest {
@@ -1177,4 +1261,23 @@ message GetProfileCompletionResponse {
   string formula_version = 3;          // bump whenever the checklist changes (threshold drift guard)
   int32 filled_count = 4;
   int32 total_count = 5;
+}
+
+message GetUserRetentionStatsRequest {
+  string period = 1; // "1month", "3months", "all"
+}
+
+message RetentionRateItem {
+  string day = 1;          // e.g. "Day 1", "Day 7", "Day 14", "Day 30"
+  int32 day_number = 2;    // 1, 7, 14, 30
+  int64 active_user_count = 3;
+  double percentage = 4;   // e.g. 73.0
+}
+
+message GetUserRetentionStatsResponse {
+  string title = 1;
+  string subtitle = 2;
+  string period = 3;
+  int64 cohort_user_count = 4;
+  repeated RetentionRateItem retention_rates = 5;
 }
