@@ -39,6 +39,22 @@ service LocationService {
   // vibe / visibility filters live in the BFF (location cannot filter by profile
   // attributes — see D-03 / Pitfall 7). Mirrors GetAccountsInBox shape.
   rpc ExploreNearby(ExploreNearbyReq) returns (ExploreNearbyRes);
+
+  // Sets an account's fixed home: writes its current location and its cell
+  // index row only. No history, footprint or session rows are written.
+  rpc SetAccountHome(SetAccountHomeReq) returns (SetAccountHomeRes);
+}
+
+message SetAccountHomeReq {
+  string account_id = 1;
+  double lat = 2;
+  double lng = 3;
+}
+
+message SetAccountHomeRes {
+  bool success = 1;
+  double lat = 2;
+  double lng = 3;
 }
 
 message GetHeatmapReq {
