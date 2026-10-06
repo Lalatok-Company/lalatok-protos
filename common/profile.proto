@@ -1009,6 +1009,7 @@ message GetBotsResponse {
 message GetAiPersonasRequest {
   int32 page = 1;
   int32 limit = 2;
+  string search_username = 3; // optional; case-insensitive part of the username
 }
 message GetAiPersonasResponse {
   repeated Profile personas = 1;
