@@ -1027,6 +1027,7 @@ message AiPersonaCharacter {
   string backstory = 7;
   string avoid_topics = 8;
   string extra_instructions = 9;
+  string preset = 10; // key of a character preset; the fields above override it
 }
 
 // An AI persona's status and conversation settings.
