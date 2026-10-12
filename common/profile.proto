@@ -130,6 +130,14 @@ service ProfileService {
   // Admin only. Deletes an AI persona profile with its photos and settings.
   // Ids that are not personas are refused.
   rpc DeleteAiPersona(DeleteAiPersonaRequest) returns (DeleteResponse);
+  // Internal only. A persona's state with one user; a pair with no record reads as zero and not ended.
+  rpc GetPersonaPairState(GetPersonaPairStateRequest) returns (PersonaPairState);
+  // Internal only. Counts one persona reply that reached the user and returns the new state.
+  rpc RecordPersonaPairReply(RecordPersonaPairReplyRequest) returns (PersonaPairState);
+  // Internal only. The persona ended the chat with this user for good; the first reason is kept.
+  rpc MarkPersonaPairDisengaged(MarkPersonaPairDisengagedRequest) returns (PersonaPairState);
+  // Internal only. Raises the stored count to at least the given one and records the ended state when asked; re-running changes nothing.
+  rpc BackfillPersonaPairState(BackfillPersonaPairStateRequest) returns (PersonaPairState);
 
   // Engagement streak methods
   rpc RecordEngagement(RecordEngagementRequest) returns (RecordEngagementResponse);
@@ -1083,6 +1091,40 @@ message SetAiPersonaActiveRequest {
 
 message DeleteAiPersonaRequest {
   string account_id = 1;
+}
+
+// How many replies a persona has sent one user over their whole chat, and
+// whether she has ended it for good. Nothing ever resets it.
+message PersonaPairState {
+  string persona_id = 1;
+  string user_id = 2;
+  int64 replies_sent = 3;
+  bool disengaged = 4;
+  string disengaged_reason = 5; // pair_cap, ended, blocked or migrated; empty when not ended
+  string disengaged_at = 6;     // RFC3339 UTC; empty when not ended
+}
+
+message GetPersonaPairStateRequest {
+  string persona_id = 1;
+  string user_id = 2;
+}
+
+message RecordPersonaPairReplyRequest {
+  string persona_id = 1;
+  string user_id = 2;
+}
+
+message MarkPersonaPairDisengagedRequest {
+  string persona_id = 1;
+  string user_id = 2;
+  string reason = 3; // pair_cap, ended or blocked
+}
+
+message BackfillPersonaPairStateRequest {
+  string persona_id = 1;
+  string user_id = 2;
+  int64 replies_sent = 3;
+  bool disengaged = 4; // true records the pair as ended with reason migrated
 }
 
 // ========== ENGAGEMENT STREAK ==========
