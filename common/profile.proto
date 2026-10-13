@@ -1102,6 +1102,7 @@ message PersonaPairState {
   bool disengaged = 4;
   string disengaged_reason = 5; // pair_cap, ended, blocked or migrated; empty when not ended
   string disengaged_at = 6;     // RFC3339 UTC; empty when not ended
+  int64 reply_limit = 7;        // the pair's own lower reply limit; 0 means the full pair cap
 }
 
 message GetPersonaPairStateRequest {
@@ -1112,6 +1113,7 @@ message GetPersonaPairStateRequest {
 message RecordPersonaPairReplyRequest {
   string persona_id = 1;
   string user_id = 2;
+  int64 reply_limit = 3; // kept only on the pair's first counted reply; 0 stores none
 }
 
 message MarkPersonaPairDisengagedRequest {
