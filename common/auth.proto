@@ -37,6 +37,14 @@ service AuthService {
     rpc LoginSocial (LoginSocialRequest) returns (LoginSocialResponse);
     rpc LinkSocial (LinkSocialRequest) returns (LinkSocialResponse);
     rpc RegisterAdmin (RegisterAdminRequest) returns (RegisterAdminResponse);
+    // Records one delivered OTP; idempotent on send_id
+    rpc RecordOtpSend (RecordOtpSendRequest) returns (RecordOtpSendResponse);
+    // Records what happened to a delivered OTP (used, wrong code, burned)
+    rpc RecordOtpOutcome (RecordOtpOutcomeRequest) returns (RecordOtpOutcomeResponse);
+    // Read-only OTP audit log for the admin page
+    rpc ListOtpLogs (ListOtpLogsRequest) returns (ListOtpLogsResponse);
+    // Daily and total OTP send and use counts for the admin page
+    rpc GetOtpLogStats (GetOtpLogStatsRequest) returns (GetOtpLogStatsResponse);
 }
 
 // Login request and response
@@ -220,4 +228,118 @@ message Admin {
     string username = 2;
     string role = 3;
     bool is_active = 4;
+}
+
+// What happened to a delivered OTP
+enum OtpOutcome {
+    OTP_OUTCOME_UNSPECIFIED = 0;
+    OTP_OUTCOME_USED = 1;
+    OTP_OUTCOME_WRONG_CODE = 2;
+    OTP_OUTCOME_LOCKED = 3;
+}
+
+// One delivered OTP. The code itself is never recorded.
+message RecordOtpSendRequest {
+    string send_id = 1;
+    string phone = 2;
+    string provider = 3;
+    string channel = 4;
+    string trigger = 5;
+    bool is_test = 6;
+    bool code_check_skipped = 7;
+    string ip = 8;
+    int64 sent_at_ms = 9;
+    int64 expires_at_ms = 10;
+}
+
+// created is false when the send id was already recorded
+message RecordOtpSendResponse {
+    bool created = 1;
+}
+
+message RecordOtpOutcomeRequest {
+    string send_id = 1;
+    OtpOutcome outcome = 2;
+    int32 wrong_attempts = 3;
+    int64 at_ms = 4;
+    string account_id = 5;
+    optional bool is_new_account = 6;
+}
+
+// updated is false when no row has that send id
+message RecordOtpOutcomeResponse {
+    bool updated = 1;
+}
+
+// One OTP log row. Times are RFC3339 UTC strings; used_at and account_id are empty when unknown.
+// status is one of used, expired, replaced or pending. locked is true when the code was burned
+// by wrong attempts.
+message OtpLog {
+    string id = 1;
+    string phone = 2;
+    string account_id = 3;
+    optional bool is_new_account = 4;
+    string provider = 5;
+    string channel = 6;
+    string trigger = 7;
+    bool is_test = 8;
+    bool code_check_skipped = 9;
+    string ip = 10;
+    string sent_at = 11;
+    string expires_at = 12;
+    string used_at = 13;
+    string status = 14;
+    bool locked = 15;
+    int32 wrong_attempts = 16;
+}
+
+// phone is an exact E.164 match; phone_digits is a digits-only contains match used when phone is
+// empty. Dates are YYYY-MM-DD Vietnam calendar days, inclusive.
+message ListOtpLogsRequest {
+    int32 page = 1;
+    int32 limit = 2;
+    string phone = 3;
+    string phone_digits = 4;
+    string status = 5;
+    string start_date = 6;
+    string end_date = 7;
+    bool include_test = 8;
+    string account_id = 9;
+}
+
+message ListOtpLogsResponse {
+    repeated OtpLog logs = 1;
+    int64 total = 2;
+    int32 page = 3;
+    int32 limit = 4;
+}
+
+// Dates are YYYY-MM-DD Vietnam calendar days, inclusive.
+message GetOtpLogStatsRequest {
+    string start_date = 1;
+    string end_date = 2;
+    bool include_test = 3;
+}
+
+message OtpLogSummary {
+    int64 sent = 1;
+    int64 used = 2;
+    double success_rate = 3;
+    int64 expired_unused = 4;
+    int64 expired = 5;
+    int64 replaced = 6;
+    int64 pending = 7;
+    int64 code_check_skipped = 8;
+}
+
+message OtpLogDailyStat {
+    string date = 1;
+    int64 sent = 2;
+    int64 used = 3;
+    double success_rate = 4;
+}
+
+message GetOtpLogStatsResponse {
+    OtpLogSummary summary = 1;
+    repeated OtpLogDailyStat daily = 2;
 }

@@ -15,6 +15,25 @@ service OtpService {
   rpc ResetRetryOtp(ResetRetryOtpRequest) returns (ResetRetryOtpResponse);
 }
 
+// Details of one delivered code; send_id identifies this send in the audit log
+message OtpSendInfo {
+  string send_id = 1;
+  string provider = 2;
+  string channel = 3;
+  int64 sent_at_ms = 4;
+  int64 expires_at_ms = 5;
+  bool is_test = 6;
+}
+
+// Why a verify did not pass; a wrong or burned code is not an error
+enum VerifyOutcome {
+  VERIFY_OUTCOME_UNSPECIFIED = 0;
+  VERIFY_OUTCOME_OK = 1;
+  VERIFY_OUTCOME_WRONG_CODE = 2;
+  VERIFY_OUTCOME_LOCKED = 3;
+  VERIFY_OUTCOME_NOT_FOUND = 4;
+}
+
 // Create OTP request and response
 message CreateRequest {
   string phone_number = 1;
@@ -22,6 +41,8 @@ message CreateRequest {
 
 message CreateResponse {
   bool status = 1;
+  // Set when a code was delivered
+  OtpSendInfo send = 2;
 }
 
 // Verify OTP request and response
@@ -32,6 +53,12 @@ message VerifyRequest {
 
 message VerifyResponse {
   bool status = 1;
+  // Send this verify was checked against; empty when no code was stored
+  string send_id = 2;
+  VerifyOutcome outcome = 3;
+  // Wrong codes entered for this send so far, and the limit before it is burned
+  int32 wrong_attempts = 4;
+  int32 max_attempts = 5;
 }
 
 // Get OTP request and response
@@ -61,6 +88,8 @@ message RetryOTPRequest {
 
 message RetryOTPResponse {
   bool status = 1;
+  // Set when a new code was delivered
+  OtpSendInfo send = 2;
 }
 
 message ResetRetryOtpRequest {
