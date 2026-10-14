@@ -250,6 +250,8 @@ message RecordOtpSendRequest {
     string ip = 8;
     int64 sent_at_ms = 9;
     int64 expires_at_ms = 10;
+    // Client platform from the X-Platform header (ios, android); empty when not sent
+    string platform = 11;
 }
 
 // created is false when the send id was already recorded
@@ -291,6 +293,7 @@ message OtpLog {
     string status = 14;
     bool locked = 15;
     int32 wrong_attempts = 16;
+    string platform = 17;
 }
 
 // phone is an exact E.164 match; phone_digits is a digits-only contains match used when phone is
