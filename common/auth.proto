@@ -250,6 +250,8 @@ message RecordOtpSendRequest {
     string ip = 8;
     int64 sent_at_ms = 9;
     int64 expires_at_ms = 10;
+    // Client platform from the X-Platform header (ios, android); empty when not sent
+    string platform = 11;
 }
 
 // created is false when the send id was already recorded
@@ -291,6 +293,7 @@ message OtpLog {
     string status = 14;
     bool locked = 15;
     int32 wrong_attempts = 16;
+    string platform = 17;
 }
 
 // phone is an exact E.164 match; phone_digits is a digits-only contains match used when phone is
@@ -305,6 +308,8 @@ message ListOtpLogsRequest {
     string end_date = 7;
     bool include_test = 8;
     string account_id = 9;
+    // ios, android, or unknown for sends without a platform; empty means all
+    string platform = 10;
 }
 
 message ListOtpLogsResponse {
@@ -314,11 +319,16 @@ message ListOtpLogsResponse {
     int32 limit = 4;
 }
 
-// Dates are YYYY-MM-DD Vietnam calendar days, inclusive.
+// Dates are YYYY-MM-DD Vietnam calendar days, inclusive. phone, phone_digits, status and
+// platform narrow the counted sends exactly as they narrow ListOtpLogs; empty means no filter.
 message GetOtpLogStatsRequest {
     string start_date = 1;
     string end_date = 2;
     bool include_test = 3;
+    string phone = 4;
+    string phone_digits = 5;
+    string status = 6;
+    string platform = 7;
 }
 
 message OtpLogSummary {
