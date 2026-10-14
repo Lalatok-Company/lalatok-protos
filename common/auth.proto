@@ -319,11 +319,16 @@ message ListOtpLogsResponse {
     int32 limit = 4;
 }
 
-// Dates are YYYY-MM-DD Vietnam calendar days, inclusive.
+// Dates are YYYY-MM-DD Vietnam calendar days, inclusive. phone, phone_digits, status and
+// platform narrow the counted sends exactly as they narrow ListOtpLogs; empty means no filter.
 message GetOtpLogStatsRequest {
     string start_date = 1;
     string end_date = 2;
     bool include_test = 3;
+    string phone = 4;
+    string phone_digits = 5;
+    string status = 6;
+    string platform = 7;
 }
 
 message OtpLogSummary {
