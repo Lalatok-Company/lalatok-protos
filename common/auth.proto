@@ -308,6 +308,8 @@ message ListOtpLogsRequest {
     string end_date = 7;
     bool include_test = 8;
     string account_id = 9;
+    // ios, android, or unknown for sends without a platform; empty means all
+    string platform = 10;
 }
 
 message ListOtpLogsResponse {
