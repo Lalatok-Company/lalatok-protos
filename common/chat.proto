@@ -40,6 +40,11 @@ service ChatService {
 
   // Participant username management
   rpc UpdateParticipantUsername(UpdateParticipantUsernameRequest) returns (UpdateParticipantUsernameResponse);
+
+  // Daily chats started, chats replied, messages and senders for the admin dashboard
+  rpc GetChatActivityStats(GetChatActivityStatsRequest) returns (GetChatActivityStatsResponse) {}
+  // AI persona conversation totals over every tracked day, for the admin dashboard
+  rpc GetChatHistoryStats(GetChatHistoryStatsRequest) returns (GetChatHistoryStatsResponse) {}
 }
 
 // Search Request
@@ -313,4 +318,92 @@ message UpdateParticipantUsernameRequest {
 message UpdateParticipantUsernameResponse {
   bool success = 1; // Indicates if the update process was initiated successfully
   // Optionally, add an error message string here if needed, though gRPC errors are preferred.
+}
+
+// Dates are YYYY-MM-DD Vietnam calendar days. Chats with an excluded participant are left out.
+message GetChatActivityStatsRequest {
+  string start_date = 1;
+  string end_date = 2;
+  repeated string exclude_account_ids = 3;
+  // AI persona accounts. Chats between a real member and one of them make up the with_personas
+  // scope. They may also be listed in exclude_account_ids.
+  repeated string persona_account_ids = 4;
+  // Fills senders and recipients in both scopes.
+  bool include_accounts = 5;
+}
+
+// has_data is false for days before activity tracking started.
+// The reply24 fields count conversations whose first message falls on the day and whose
+// recipient is a real member: eligible conversations have a full 24 hour window behind them,
+// replied ones got a recipient reply within 24 hours, and pending ones are not yet 24 hours old
+// (they are left out of eligible).
+message ChatActivityDay {
+  string date = 1;
+  int64 chats_started = 2;
+  int64 chats_replied = 3;
+  int64 messages = 4;
+  int64 senders = 5;
+  bool has_data = 6;
+  int64 reply24_eligible = 7;
+  int64 reply24_replied = 8;
+  int64 reply24_pending = 9;
+}
+
+// messages counts what the account sent; the reply24 fields count conversations where the
+// account was the recipient.
+message ChatAccountStat {
+  string account_id = 1;
+  int64 messages = 2;
+  int64 reply24_eligible = 3;
+  int64 reply24_replied = 4;
+  int64 reply24_pending = 5;
+}
+
+// One scope of the chat counters. senders lists the real accounts that sent messages, recipients
+// the real accounts that received a conversation start; both are only filled when
+// include_accounts is set.
+message ChatScopeStats {
+  repeated ChatActivityDay days = 1;
+  int64 chats_started_total = 2;
+  int64 chats_replied_total = 3;
+  int64 messages_total = 4;
+  int64 senders_total = 5;
+  int64 reply24_eligible_total = 6;
+  int64 reply24_replied_total = 7;
+  int64 reply24_pending_total = 8;
+  repeated ChatAccountStat senders = 9;
+  repeated ChatAccountStat recipients = 10;
+}
+
+// Fields 1-6 keep their meaning and equal the members scope.
+message GetChatActivityStatsResponse {
+  repeated ChatActivityDay days = 1;
+  int64 chats_started_total = 2;
+  int64 chats_replied_total = 3;
+  int64 messages_total = 4;
+  int64 senders_total = 5;
+  string tracking_since = 6; // YYYY-MM-DD, first day with activity tracking
+  // Chats between two real members.
+  ChatScopeStats members = 7;
+  // Chats between a real member and an AI persona.
+  ChatScopeStats with_personas = 8;
+}
+
+// Covers every tracked day; there is no date range.
+message GetChatHistoryStatsRequest {
+  repeated string persona_account_ids = 1;
+  repeated string exclude_account_ids = 2;
+}
+
+// persona_started counts tracked conversations an AI persona started with a real member, and
+// persona_replied those of them the member replied to. members_replied is the distinct real
+// members who replied after a persona started the conversation. member_messages and
+// persona_messages count messages between real members and between real members and personas.
+message GetChatHistoryStatsResponse {
+  int64 persona_started = 1;
+  int64 persona_replied = 2;
+  int64 members_replied = 3;
+  string tracking_since = 4; // YYYY-MM-DD, first day with activity tracking
+  int64 member_messages = 5;
+  int64 persona_messages = 6;
 }

@@ -13,6 +13,8 @@ service MediaService {
   rpc UpdateStatusMedia(UpdateStatusMediaRequest) returns (UpdateStatusMediaResponse) {}
   rpc GetTutorialVideo(GetTutorialVideoRequest) returns (GetTutorialVideoResponse) {}
   rpc MarkVideoWatched(MarkVideoWatchedRequest) returns (MarkVideoWatchedResponse) {}
+  // Daily count of abandoned uploads (still draft 24 hours after creation), for the admin dashboard
+  rpc GetDraftUploadStats(GetDraftUploadStatsRequest) returns (GetDraftUploadStatsResponse) {}
 }
 
 message UploadMediaRequest {
@@ -117,4 +119,21 @@ message MarkVideoWatchedRequest {
 message MarkVideoWatchedResponse {
   bool success = 1;
   string message = 2;
+}
+
+// Dates are YYYY-MM-DD Vietnam calendar days. Uploads owned by exclude_account_ids are left out.
+message GetDraftUploadStatsRequest {
+  string start_date = 1;
+  string end_date = 2;
+  repeated string exclude_account_ids = 3;
+}
+
+message DraftUploadDay {
+  string date = 1;
+  int64 count = 2;
+}
+
+message GetDraftUploadStatsResponse {
+  repeated DraftUploadDay days = 1;
+  int64 total = 2;
 }

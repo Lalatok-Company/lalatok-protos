@@ -10,6 +10,8 @@ message Account {
   string id = 1;
   string phone = 2;
   repeated AccountSocial account_socials = 3;
+  // Sign-in methods of the account: google, apple, facebook, phone.
+  repeated string providers = 4;
 }
 
 message AccountSocial {
@@ -45,6 +47,8 @@ service AuthService {
     rpc ListOtpLogs (ListOtpLogsRequest) returns (ListOtpLogsResponse);
     // Daily and total OTP send and use counts for the admin page
     rpc GetOtpLogStats (GetOtpLogStatsRequest) returns (GetOtpLogStatsResponse);
+    // Account ids that can sign in with any of the given providers, for the admin users filter
+    rpc ListAccountIdsByProvider (ListAccountIdsByProviderRequest) returns (ListAccountIdsByProviderResponse);
 }
 
 // Login request and response
@@ -352,4 +356,14 @@ message OtpLogDailyStat {
 message GetOtpLogStatsResponse {
     OtpLogSummary summary = 1;
     repeated OtpLogDailyStat daily = 2;
+}
+
+// providers take google, apple, facebook or phone.
+message ListAccountIdsByProviderRequest {
+    repeated string providers = 1;
+}
+
+// The id list is capped at 50000.
+message ListAccountIdsByProviderResponse {
+    repeated string account_ids = 1;
 }
