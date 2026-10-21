@@ -65,6 +65,8 @@ service SettingService {
   rpc GetSOSRequests(GetSOSRequestsRequest) returns (GetSOSRequestsResponse);
   rpc DeleteSOSRequest(DeleteSOSRequestRequest) returns (google.protobuf.Empty);
   rpc GetSOSRequest(GetSOSRequestRequest) returns (SOSRequest);
+  // Open report count, the latest open reports and the most reported accounts, for the admin dashboard
+  rpc GetReportMetrics(GetReportMetricsRequest) returns (GetReportMetricsResponse);
 }
 
 // Privacy Setting
@@ -439,4 +441,46 @@ message GhostModeSettingInfo {
   double fixed_lng = 5;
   // Timestamp when the fixed location was set
   google.protobuf.Timestamp fixed_timestamp = 6;
+}
+
+// Limits default to 5 latest reports, 5 top accounts and a 30 day window, and are capped at
+// 20, 20 and 90 days.
+message GetReportMetricsRequest {
+  int32 latest_limit = 1;
+  int32 top_limit = 2;
+  int32 top_window_days = 3;
+  // Optional range for by_status, by_reason and range_total, as YYYY-MM-DD Vietnam days.
+  string start_date = 4;
+  string end_date = 5;
+}
+
+message AdminReportBucket {
+  string key = 1;
+  int64 count = 2;
+}
+
+message AdminReportMetricItem {
+  string id = 1;
+  string report_type = 2;
+  string account_id = 3;
+  string reported_account_id = 4;
+  string status = 5;
+  string created_at = 6; // RFC3339
+}
+
+message AdminReportedAccountStat {
+  string reported_account_id = 1;
+  int64 distinct_reporters = 2;
+  int64 reports = 3;
+}
+
+message GetReportMetricsResponse {
+  int64 open_count = 1;
+  repeated AdminReportMetricItem latest_open = 2;
+  repeated AdminReportedAccountStat top_reported = 3;
+  // by_status and by_reason count reports created in the range, by their current status and by
+  // reason. Both are empty and range_total is 0 when the range is not set.
+  repeated AdminReportBucket by_status = 4;
+  repeated AdminReportBucket by_reason = 5;
+  int64 range_total = 6;
 }

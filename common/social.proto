@@ -88,6 +88,16 @@ service SocialService {
   // Phase 6 (D-16) — read-only banner query for the opener budget, mirroring
   // GetReactionQuotas's shape.
   rpc GetChatOpenQuotaCount(GetChatOpenQuotaCountRequest) returns (GetChatOpenQuotaCountResponse);
+  // Daily saved likes, distinct likers, matches and friend connections for the admin dashboard
+  rpc GetInteractionStats(GetInteractionStatsRequest) returns (GetInteractionStatsResponse);
+  // Read-only page of like rows for the admin matching page
+  rpc ListAdminReactions(AdminSocialListRequest) returns (ListAdminReactionsResponse);
+  // Read-only page of matched pairs for the admin matching page
+  rpc ListAdminMatches(AdminSocialListRequest) returns (ListAdminMatchesResponse);
+  // Read-only page of friend connections for the admin matching page
+  rpc ListAdminFriends(AdminSocialListRequest) returns (ListAdminFriendsResponse);
+  // Read-only page of pending friend requests for the admin matching page
+  rpc ListAdminFriendRequests(AdminSocialListRequest) returns (ListAdminFriendRequestsResponse);
 }
 
 // Phase 2 — reaction state for a (account_id, target_id) pair. Mirrors the
@@ -558,4 +568,112 @@ message GetChatOpenQuotaCountRequest {
 }
 message GetChatOpenQuotaCountResponse {
   int32 count = 1;
+}
+
+// Dates are YYYY-MM-DD Vietnam calendar days. A reaction is left out when its reactor is in
+// exclude_account_ids (a reaction by a real user to an excluded account still counts); a match is
+// left out when either side is in exclude_account_ids.
+message GetInteractionStatsRequest {
+  string start_date = 1;
+  string end_date = 2;
+  repeated string exclude_account_ids = 3;
+  // AI persona accounts, used only by the match snapshot. They may also be listed in
+  // exclude_account_ids.
+  repeated string persona_account_ids = 4;
+  // Fills reactor_counts.
+  bool include_reactor_counts = 5;
+  // Fills the all-time match snapshot: persona_matches_all_time, matched_account_ids and
+  // persona_matched_account_ids. The snapshot ignores the date range.
+  bool include_match_snapshot = 6;
+}
+
+// reactions counts likes created on the day that are still sent or matched (revoked likes are
+// left out), with a real liker and a real target. reactors is the distinct likers among them.
+// friends counts friend connections created on the day between two real accounts; removed
+// friendships are deleted, so these are connections still saved.
+message InteractionStatsDay {
+  string date = 1;
+  int64 reactions = 2;
+  int64 reactors = 3;
+  int64 matches = 4;
+  int64 friends = 5;
+}
+
+message AdminAccountCount {
+  string account_id = 1;
+  int64 count = 2;
+}
+
+message GetInteractionStatsResponse {
+  repeated InteractionStatsDay days = 1;
+  int64 reactions_total = 2;
+  int64 reactors_total = 3;
+  int64 matches_total = 4;
+  int64 friends_total = 5;
+  // Saved likes per real liker in the range.
+  repeated AdminAccountCount reactor_counts = 6;
+  // Every match between a real account and an AI persona.
+  int64 persona_matches_all_time = 7;
+  // Real accounts with at least one match with another real account.
+  repeated string matched_account_ids = 8;
+  // Real accounts with at least one match with an AI persona.
+  repeated string persona_matched_account_ids = 9;
+}
+
+// page_size is 1 to 50. search_id is a uuid matched against the row id or either account id
+// (friend requests have no row id). any_account_ids keeps rows where either side is listed.
+// first_account_ids filters the liker or requester and second_account_ids the target or
+// receiver; matches have no direction, so for them both match either side. statuses applies to
+// likes only: sent, matched, revoked.
+// created_from and created_to are YYYY-MM-DD Vietnam days. Rows touching any
+// exclude_account_ids are skipped.
+message AdminSocialListRequest {
+  int32 page = 1;
+  int32 page_size = 2;
+  string search_id = 3;
+  repeated string any_account_ids = 4;
+  repeated string first_account_ids = 5;
+  repeated string second_account_ids = 6;
+  repeated string statuses = 7;
+  string created_from = 8;
+  string created_to = 9;
+  repeated string exclude_account_ids = 10;
+}
+
+// Times are RFC3339; matched_at is empty when the like never matched.
+message AdminReactionRow {
+  string id = 1;
+  string reactor_id = 2;
+  string target_id = 3;
+  string status = 4;
+  string matched_at = 5;
+  string created_at = 6;
+}
+
+// created_at is RFC3339. id is empty for friend requests.
+message AdminPairRow {
+  string id = 1;
+  string first_id = 2;
+  string second_id = 3;
+  string created_at = 4;
+}
+
+message ListAdminReactionsResponse {
+  repeated AdminReactionRow rows = 1;
+  int64 total = 2;
+}
+
+message ListAdminMatchesResponse {
+  repeated AdminPairRow rows = 1;
+  int64 total = 2;
+}
+
+message ListAdminFriendsResponse {
+  repeated AdminPairRow rows = 1;
+  int64 total = 2;
+}
+
+message ListAdminFriendRequestsResponse {
+  repeated AdminPairRow rows = 1;
+  int64 total = 2;
 }
