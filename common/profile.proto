@@ -52,6 +52,7 @@ message Profile {
 
   // Internal only. The BFF never serializes it to mobile clients.
   bool is_ai_persona = 35;
+  int32 first_explore_count = 36;
 }
 
 service ProfileService {
@@ -164,6 +165,8 @@ service ProfileService {
   // non-clearable and defaults to `just_saying_hi`, so it is never empty and
   // would inflate every rate by a constant.
   rpc GetProfileCompletion(GetProfileCompletionRequest) returns (GetProfileCompletionResponse);
+  // Onboarding first explore progress counter
+  rpc UpdateFirstExploreCount(UpdateFirstExploreCountRequest) returns (UpdateFirstExploreCountResponse);
 }
 
 message UpdateProfileLocalDistrictRequest {
@@ -1509,4 +1512,14 @@ message SearchAdminAccountsRequest {
 
 message SearchAdminAccountsResponse {
   repeated AdminAccountRef accounts = 1;
+}
+
+message UpdateFirstExploreCountRequest {
+  string account_id = 1;
+  int32 count = 2;
+}
+
+message UpdateFirstExploreCountResponse {
+  bool success = 1;
+  int32 count = 2;
 }
