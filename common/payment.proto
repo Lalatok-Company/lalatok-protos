@@ -79,6 +79,14 @@ service PaymentService {
   // running. It returns the affected accounts so the caller can re-project the
   // special glow for each. Idempotent: a second run settles nothing.
   rpc SettleExpiredBoosts(SettleExpiredBoostsRequest) returns (SettleExpiredBoostsResponse);
+  // Active subscribers, overdue renewals and daily verification failures for the admin dashboard
+  rpc GetAdminPaymentMetrics(GetAdminPaymentMetricsRequest) returns (GetAdminPaymentMetricsResponse);
+  // Read-only page of subscription records for the admin subscriptions page
+  rpc ListAdminSubscriptions(ListAdminSubscriptionsRequest) returns (ListAdminSubscriptionsResponse);
+  // Subscription counts by state for the admin subscriptions page
+  rpc GetAdminSubscriptionSummary(GetAdminSubscriptionSummaryRequest) returns (GetAdminSubscriptionSummaryResponse);
+  // One subscription record and its payment events, read-only
+  rpc ListAdminSubscriptionTransactions(ListAdminSubscriptionTransactionsRequest) returns (ListAdminSubscriptionTransactionsResponse);
 }
 
 // ========== MESSAGES ==========
@@ -311,4 +319,140 @@ message SettledBoost {
 
 message SettleExpiredBoostsResponse {
   repeated SettledBoost settled = 1;
+}
+
+// Dates are YYYY-MM-DD Vietnam calendar days. Rows owned by exclude_account_ids are left out.
+message GetAdminPaymentMetricsRequest {
+  string start_date = 1;
+  string end_date = 2;
+  int32 list_limit = 3;
+  repeated string exclude_account_ids = 4;
+}
+
+message AdminOverdueRenewal {
+  string user_id = 1;
+  string product_id = 2;
+  string app = 3;
+  string end_date = 4; // RFC3339
+  string environment = 5;
+}
+
+message AdminPaymentDailyCount {
+  string date = 1;
+  int64 count = 2;
+}
+
+// failed_verifications counts verification failures recorded in the payment log per Vietnam day
+// and never carries the log text.
+//
+// active_subscription_user_ids leaves out sandbox, Xcode and local-testing purchases, so it counts
+// paying members only. active_any_env_user_ids applies the same active rule in every store
+// environment, sandbox included: it is the list to compare premium flags against, because the
+// purchase flow flags a profile premium for a sandbox purchase too. Both lists drop fake
+// purchases and exclude_account_ids.
+message PaymentStatusBucket {
+  string key = 1;
+  int64 count = 2;
+}
+
+message GetAdminPaymentMetricsResponse {
+  repeated string active_subscription_user_ids = 1;
+  repeated AdminOverdueRenewal overdue_renewals = 2;
+  int64 overdue_renewals_total = 3;
+  repeated AdminPaymentDailyCount failed_verifications = 4;
+  int64 failed_verifications_total = 5;
+  repeated string active_any_env_user_ids = 6;
+  // Subscription records created in the range per status, real purchases only.
+  repeated PaymentStatusBucket subscriptions_by_status = 7;
+  // The full overdue user list behind overdue_renewals_total.
+  repeated string overdue_user_ids = 8;
+}
+
+// page_size is 1 to 50. statuses take active, grace, billing_retry, expired, cancelled. platform
+// takes ios or android. auto_renew takes on or off; empty lists both. environment takes
+// production (default), sandbox or all. expires_from and expires_to are YYYY-MM-DD Vietnam days.
+// stale_only keeps records still counted active after their end date. Fake purchases and records
+// owned by exclude_user_ids are left out.
+message ListAdminSubscriptionsRequest {
+  int32 page = 1;
+  int32 page_size = 2;
+  repeated string user_ids = 3;
+  string transaction_id = 4;
+  repeated string statuses = 5;
+  string platform = 6;
+  repeated string product_ids = 7;
+  string auto_renew = 8;
+  string environment = 9;
+  string expires_from = 10;
+  string expires_to = 11;
+  bool stale_only = 12;
+  repeated string exclude_user_ids = 13;
+}
+
+// Dates are RFC3339. status is derived: grace while the grace period runs, billing_retry while
+// the store retries billing, active when not cancelled and the end date has not passed,
+// cancelled when cancelled, else expired. events counts the payment events for the same user and
+// product.
+message AdminSubscriptionRow {
+  int64 id = 1;
+  string user_id = 2;
+  string app = 3;
+  string product_id = 4;
+  string orig_tx_id = 5;
+  string status = 6;
+  bool auto_renew = 7;
+  string start_date = 8;
+  string end_date = 9;
+  string grace_period_end_date = 10;
+  bool billing_retry = 11;
+  bool cancelled = 12;
+  string environment = 13;
+  int64 events = 14;
+}
+
+message ListAdminSubscriptionsResponse {
+  repeated AdminSubscriptionRow rows = 1;
+  int64 total = 2;
+}
+
+// environment takes production (default), sandbox or all.
+message GetAdminSubscriptionSummaryRequest {
+  string environment = 1;
+  repeated string exclude_user_ids = 2;
+}
+
+// products lists the product ids seen, for the product filter.
+message GetAdminSubscriptionSummaryResponse {
+  int64 total = 1;
+  int64 active = 2;
+  int64 grace = 3;
+  int64 billing_retry = 4;
+  int64 stale_active = 5;
+  int64 auto_renew_on = 6;
+  int64 expiring_7d = 7;
+  repeated string products = 8;
+}
+
+message ListAdminSubscriptionTransactionsRequest {
+  int64 subscription_id = 1;
+  repeated string exclude_user_ids = 2;
+}
+
+// Times are RFC3339.
+message AdminPaymentEvent {
+  int64 id = 1;
+  string event_kind = 2;
+  string transaction_id = 3;
+  string status = 4;
+  string product_id = 5;
+  int64 price_micros = 6;
+  string currency = 7;
+  string period_start = 8;
+  string period_end = 9;
+  string created_at = 10;
+}
+
+message ListAdminSubscriptionTransactionsResponse {
+  AdminSubscriptionRow subscription = 1;
+  repeated AdminPaymentEvent events = 2;
 }

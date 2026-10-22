@@ -52,6 +52,7 @@ message Profile {
 
   // Internal only. The BFF never serializes it to mobile clients.
   bool is_ai_persona = 35;
+  int32 first_explore_count = 36;
 }
 
 service ProfileService {
@@ -164,6 +165,8 @@ service ProfileService {
   // non-clearable and defaults to `just_saying_hi`, so it is never empty and
   // would inflate every rate by a constant.
   rpc GetProfileCompletion(GetProfileCompletionRequest) returns (GetProfileCompletionResponse);
+  // Onboarding first explore progress counter
+  rpc UpdateFirstExploreCount(UpdateFirstExploreCountRequest) returns (UpdateFirstExploreCountResponse);
 }
 
 message UpdateProfileLocalDistrictRequest {
@@ -200,6 +203,20 @@ service AdminService {
   rpc GetUserRetentionStats(GetUserRetentionStatsRequest) returns (GetUserRetentionStatsResponse);
   // Create a new user
   rpc CreateUser(CreateUserRequest) returns (CreateUserResponse);
+  // Account ids of test, AI persona and bot profiles, used to leave them out of metrics
+  rpc GetNonRealAccountIds(google.protobuf.Empty) returns (GetNonRealAccountIdsResponse);
+  // Current audience and new accounts per Vietnam day, real users only
+  rpc GetAdminAudienceMetrics(GetAdminAudienceMetricsRequest) returns (GetAdminAudienceMetricsResponse);
+  // Daily profile views, emoji gifts and vibe changes, real users only
+  rpc GetAdminProfileActivity(GetAdminProfileActivityRequest) returns (GetAdminProfileActivityResponse);
+  // Premium flag drift against the ids that hold an active subscription
+  rpc GetSubscriptionDrift(GetSubscriptionDriftRequest) returns (GetSubscriptionDriftResponse);
+  // Username and created time for up to 200 account ids
+  rpc LookupAccounts(LookupAccountsRequest) returns (LookupAccountsResponse);
+  // Per-gender account counts and summed values for a list of real accounts
+  rpc GetAdminGenderBreakdown(GetAdminGenderBreakdownRequest) returns (GetAdminGenderBreakdownResponse);
+  // Find accounts by username, AI personas included, for the admin list filters
+  rpc SearchAdminAccounts(SearchAdminAccountsRequest) returns (SearchAdminAccountsResponse);
 }
 
 message GetAllUsersRequest {
@@ -215,6 +232,11 @@ message GetAllUsersRequest {
   string end_date = 10; // ISO format date string YYYY-MM-DD
   string gender = 11; // male, female, other
   repeated string search_countries = 12; // Country codes filter (e.g., ["VN", "US", "KO"])
+  repeated string genders = 13; // male, female, other, unknown; any of them matches
+  string premium = 14; // premium or free; empty lists both
+  string onboarded = 15; // done or pending; empty lists both
+  repeated string account_ids = 16; // only used when filter_account_ids is true
+  bool filter_account_ids = 17; // true lists only account_ids; an empty account_ids then lists nobody
 }
 
 message GetAllUsersResponse {
@@ -245,6 +267,7 @@ message UserInfo {
   string subscription_end_date = 17;
   ReferralInfo referral = 18;
   string country = 19;
+  bool is_complete = 20; // onboarding finished
 }
 
 message ProfileWithAccount {
@@ -1326,4 +1349,177 @@ message GetUserRetentionStatsResponse {
   string period = 3;
   int64 cohort_user_count = 4;
   repeated RetentionRateItem retention_rates = 5;
+}
+
+// Admin metrics. Dates are YYYY-MM-DD Vietnam calendar days, times are RFC3339 strings.
+
+message AdminMetricBucket {
+  string key = 1;
+  int64 count = 2;
+}
+
+message AdminDailyCount {
+  string date = 1;
+  int64 count = 2;
+}
+
+message AdminAccountRef {
+  string account_id = 1;
+  string username = 2;
+  string created_at = 3;
+  string avatar_url = 4;
+  bool is_ai_persona = 5;
+}
+
+// account_ids is forwarded as exclude_account_ids to the payment, social, media and chat metric
+// RPCs, which each accept at most 20000 ids. The list is never truncated: when it would hold more,
+// GetNonRealAccountIds fails with FAILED_PRECONDITION instead. Raise the limit on all of them together.
+message GetNonRealAccountIdsResponse {
+  repeated string account_ids = 1;
+  // The AI persona subset of account_ids.
+  repeated string persona_account_ids = 2;
+}
+
+message GetAdminAudienceMetricsRequest {
+  string start_date = 1;
+  string end_date = 2;
+}
+
+message GetAdminAudienceMetricsResponse {
+  int64 member_accounts = 1;
+  int64 complete = 2;
+  int64 incomplete = 3;
+  int64 new_today = 4;
+  repeated AdminMetricBucket gender = 5;
+  repeated AdminMetricBucket age_groups = 6;
+  repeated AdminMetricBucket countries = 7;
+  repeated AdminMetricBucket education = 8;
+  repeated AdminDailyCount new_accounts = 9;
+  int64 new_accounts_total = 10;
+  // New real accounts per day in the range, split by gender.
+  repeated AdminDailyGenderCount new_accounts_by_gender = 11;
+  // Every country with at least one real member, not only the top ones.
+  repeated AdminMetricBucket all_countries = 12;
+  // Real members who finished onboarding, per gender.
+  repeated AdminMetricBucket complete_by_gender = 13;
+  // Members per looking-for option, split by gender.
+  repeated AdminLookingForRow looking_for = 14;
+  // Distinct real members who picked at least one looking-for option.
+  int64 looking_for_members = 15;
+  int64 ai_personas_total = 16;
+  int64 ai_personas_active = 17;
+}
+
+message GetAdminProfileActivityRequest {
+  string start_date = 1;
+  string end_date = 2;
+}
+
+// Vibe fields only have data from the day vibe tracking started; vibe_has_data is false before it.
+message AdminProfileActivityDay {
+  string date = 1;
+  int64 profile_views = 2;
+  int64 profile_viewers = 3;
+  int64 emoji_gifts = 4;
+  int64 emoji_transactions = 5;
+  int64 emoji_senders = 6;
+  int64 vibe_changes = 7;
+  int64 vibe_users = 8;
+  bool vibe_has_data = 9;
+}
+
+message GetAdminProfileActivityResponse {
+  repeated AdminProfileActivityDay days = 1;
+  int64 profile_views_total = 2;
+  int64 profile_viewers_total = 3;
+  int64 emoji_gifts_total = 4;
+  int64 emoji_transactions_total = 5;
+  int64 emoji_senders_total = 6;
+  int64 vibe_changes_total = 7;
+  int64 vibe_users_total = 8;
+  repeated AdminMetricBucket vibe_breakdown = 9;
+  string vibe_tracking_since = 10;
+}
+
+message GetSubscriptionDriftRequest {
+  repeated string active_subscription_account_ids = 1;
+  int32 limit = 2;
+  // Accounts whose subscription is past its end date but still recorded as active.
+  repeated string overdue_account_ids = 3;
+}
+
+message GetSubscriptionDriftResponse {
+  int64 premium_members = 1;
+  repeated AdminAccountRef flagged_without_subscription = 2;
+  int64 flagged_without_subscription_total = 3;
+  repeated AdminAccountRef subscribed_without_flag = 4;
+  int64 subscribed_without_flag_total = 5;
+  // Distinct real accounts flagged premium without an active subscription or listed in
+  // overdue_account_ids.
+  int64 expired_still_active_total = 6;
+}
+
+message LookupAccountsRequest {
+  repeated string account_ids = 1;
+}
+
+message LookupAccountsResponse {
+  repeated AdminAccountRef accounts = 1;
+}
+
+message AdminDailyGenderCount {
+  string date = 1;
+  int64 male = 2;
+  int64 female = 3;
+  int64 other = 4;
+  int64 unknown = 5;
+}
+
+message AdminLookingForRow {
+  string key = 1;
+  int64 male = 2;
+  int64 female = 3;
+  int64 other = 4;
+  int64 unknown = 5;
+}
+
+message AdminAccountValues {
+  string account_id = 1;
+  repeated int64 values = 2;
+}
+
+// At most 50000 rows.
+message GetAdminGenderBreakdownRequest {
+  repeated AdminAccountValues rows = 1;
+}
+
+// totals holds the per-position sums of the values of the accounts in the group.
+message AdminGenderGroup {
+  string gender = 1;
+  int64 accounts = 2;
+  repeated int64 totals = 3;
+}
+
+message GetAdminGenderBreakdownResponse {
+  repeated AdminGenderGroup groups = 1;
+}
+
+// limit is at most 50.
+message SearchAdminAccountsRequest {
+  string query = 1;
+  int32 limit = 2;
+}
+
+message SearchAdminAccountsResponse {
+  repeated AdminAccountRef accounts = 1;
+}
+
+message UpdateFirstExploreCountRequest {
+  string account_id = 1;
+  int32 count = 2;
+}
+
+message UpdateFirstExploreCountResponse {
+  bool success = 1;
+  int32 count = 2;
 }
