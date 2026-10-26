@@ -49,6 +49,8 @@ service AuthService {
     rpc GetOtpLogStats (GetOtpLogStatsRequest) returns (GetOtpLogStatsResponse);
     // Account ids that can sign in with any of the given providers, for the admin users filter
     rpc ListAccountIdsByProvider (ListAccountIdsByProviderRequest) returns (ListAccountIdsByProviderResponse);
+    // Account ids whose phone number contains the typed digits, for the admin users search
+    rpc ListAccountIdsByPhone (ListAccountIdsByPhoneRequest) returns (ListAccountIdsByPhoneResponse);
 }
 
 // Login request and response
@@ -365,5 +367,16 @@ message ListAccountIdsByProviderRequest {
 
 // The id list is capped at 50000.
 message ListAccountIdsByProviderResponse {
+    repeated string account_ids = 1;
+}
+
+// query is the part of a phone number an admin typed, such as "0989",
+// "967475" or "+84 967 475 224". Only its digits are used, at least 3.
+message ListAccountIdsByPhoneRequest {
+    string query = 1;
+}
+
+// The id list is capped at 1000.
+message ListAccountIdsByPhoneResponse {
     repeated string account_ids = 1;
 }
