@@ -330,6 +330,9 @@ message GetChatActivityStatsRequest {
   repeated string persona_account_ids = 4;
   // Fills senders and recipients in both scopes.
   bool include_accounts = 5;
+  // Fills the conversation fields of both scopes: starters, first reply, long chats and each
+  // day's starter_counts. They read as 0 and empty without it.
+  bool include_conversations = 6;
 }
 
 // has_data is false for days before activity tracking started.
@@ -337,6 +340,14 @@ message GetChatActivityStatsRequest {
 // recipient is a real member: eligible conversations have a full 24 hour window behind them,
 // replied ones got a recipient reply within 24 hours, and pending ones are not yet 24 hours old
 // (they are left out of eligible).
+// The fields from starters on are only filled with include_conversations. starters is the
+// distinct real accounts that sent the first message of a conversation started on the day.
+// first_reply_timed counts the replied conversations whose start and first reply times are both
+// recorded, and first_reply_median_seconds is the median time from start to first reply over them
+// (0 when first_reply_timed is 0). long_chats counts the conversations with at
+// least 5 messages in their first 7 Vietnam days (the start day and the 6 after it), at least one
+// of them from the recipient; days whose window is still open can still grow. starter_counts
+// lists each real starter with the conversations it started on the day.
 message ChatActivityDay {
   string date = 1;
   int64 chats_started = 2;
@@ -347,6 +358,17 @@ message ChatActivityDay {
   int64 reply24_eligible = 7;
   int64 reply24_replied = 8;
   int64 reply24_pending = 9;
+  int64 starters = 10;
+  int64 first_reply_timed = 11;
+  int64 first_reply_median_seconds = 12;
+  int64 long_chats = 13;
+  repeated ChatStarterCount starter_counts = 14;
+}
+
+// One conversation starter and the conversations it started on a day.
+message ChatStarterCount {
+  string account_id = 1;
+  int64 chats = 2;
 }
 
 // messages counts what the account sent; the reply24 fields count conversations where the
@@ -373,6 +395,12 @@ message ChatScopeStats {
   int64 reply24_pending_total = 8;
   repeated ChatAccountStat senders = 9;
   repeated ChatAccountStat recipients = 10;
+  // Distinct starters across the range, and the first reply median and long conversations
+  // over the whole range, as defined on ChatActivityDay; only with include_conversations.
+  int64 starters_total = 11;
+  int64 first_reply_timed_total = 12;
+  int64 first_reply_median_seconds = 13;
+  int64 long_chats_total = 14;
 }
 
 // Fields 1-6 keep their meaning and equal the members scope.
