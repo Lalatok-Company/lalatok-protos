@@ -87,6 +87,8 @@ service PaymentService {
   rpc GetAdminSubscriptionSummary(GetAdminSubscriptionSummaryRequest) returns (GetAdminSubscriptionSummaryResponse);
   // One subscription record and its payment events, read-only
   rpc ListAdminSubscriptionTransactions(ListAdminSubscriptionTransactionsRequest) returns (ListAdminSubscriptionTransactionsResponse);
+  // GrantTrialSubscription grants a free trial subscription period to an account (e.g. 3-day free trial on 3 avatars)
+  rpc GrantTrialSubscription(GrantTrialSubscriptionRequest) returns (GrantTrialSubscriptionResponse);
 }
 
 // ========== MESSAGES ==========
@@ -455,4 +457,16 @@ message AdminPaymentEvent {
 message ListAdminSubscriptionTransactionsResponse {
   AdminSubscriptionRow subscription = 1;
   repeated AdminPaymentEvent events = 2;
+}
+
+message GrantTrialSubscriptionRequest {
+  string account_id = 1;
+  int32 duration_days = 2;
+  string product_id = 3;
+  string reason = 4;
+}
+
+message GrantTrialSubscriptionResponse {
+  bool success = 1;
+  SubscriptionItem subscription = 2;
 }

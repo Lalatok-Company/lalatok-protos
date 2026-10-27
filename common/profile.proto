@@ -53,6 +53,8 @@ message Profile {
   // Internal only. The BFF never serializes it to mobile clients.
   bool is_ai_persona = 35;
   int32 first_explore_count = 36;
+  bool has_claimed_photo_trial = 37;
+  google.protobuf.Timestamp photo_trial_ends_at = 38;
 }
 
 service ProfileService {
@@ -1255,6 +1257,7 @@ message SetProfilePhotosRequest {
 }
 message SetProfilePhotosResponse {
   repeated ProfilePhoto photos = 1;  // resulting full list (same ProfilePhoto shape as ReorderProfilePhotosResponse)
+  bool trial_granted = 2;
 }
 
 // View-count counter (D-13). Subscribed-only gate enforced by the service
