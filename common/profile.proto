@@ -215,6 +215,8 @@ service AdminService {
   rpc LookupAccounts(LookupAccountsRequest) returns (LookupAccountsResponse);
   // Per-gender account counts and summed values for a list of real accounts
   rpc GetAdminGenderBreakdown(GetAdminGenderBreakdownRequest) returns (GetAdminGenderBreakdownResponse);
+  // Gender and signup day of up to 50000 real accounts
+  rpc GetAdminAccountTraits(GetAdminAccountTraitsRequest) returns (GetAdminAccountTraitsResponse);
   // Find accounts by username, AI personas included, for the admin list filters
   rpc SearchAdminAccounts(SearchAdminAccountsRequest) returns (SearchAdminAccountsResponse);
 }
@@ -1502,6 +1504,23 @@ message AdminGenderGroup {
 
 message GetAdminGenderBreakdownResponse {
   repeated AdminGenderGroup groups = 1;
+}
+
+message GetAdminAccountTraitsRequest {
+  repeated string account_ids = 1;
+}
+
+// gender is male, female, other or unknown; signup_date is the YYYY-MM-DD Vietnam day the
+// profile was created.
+message AdminAccountTraits {
+  string account_id = 1;
+  string gender = 2;
+  string signup_date = 3;
+}
+
+// Only real members are listed; other ids are left out.
+message GetAdminAccountTraitsResponse {
+  repeated AdminAccountTraits accounts = 1;
 }
 
 // limit is at most 50.
