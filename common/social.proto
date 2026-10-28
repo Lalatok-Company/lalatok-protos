@@ -98,6 +98,10 @@ service SocialService {
   rpc ListAdminFriends(AdminSocialListRequest) returns (ListAdminFriendsResponse);
   // Read-only page of pending friend requests for the admin matching page
   rpc ListAdminFriendRequests(AdminSocialListRequest) returns (ListAdminFriendRequestsResponse);
+  // Deletes every social row that references the account on any side, in one
+  // transaction. Idempotent: a repeat call deletes nothing. Callers run it after
+  // the account's profile has been deleted.
+  rpc PurgeAccount(PurgeAccountRequest) returns (PurgeAccountResponse);
 }
 
 // Phase 2 — reaction state for a (account_id, target_id) pair. Mirrors the
@@ -686,4 +690,23 @@ message ListAdminFriendsResponse {
 message ListAdminFriendRequestsResponse {
   repeated AdminPairRow rows = 1;
   int64 total = 2;
+}
+
+message PurgeAccountRequest {
+  string account_id = 1;
+}
+
+// Rows deleted per table.
+message PurgeAccountResponse {
+  int64 reactions = 1;
+  int64 matches = 2;
+  int64 reaction_reveals = 3;
+  int64 friends = 4;
+  int64 friend_requests = 5;
+  int64 follows = 6;
+  int64 comings = 7;
+  int64 activity_seen = 8;
+  int64 chat_open_quotas = 9;
+  int64 reaction_send_quotas = 10;
+  int64 reaction_reveal_quotas = 11;
 }
