@@ -424,6 +424,16 @@ message GetSentReactionsRequest {
 }
 message GetSentReactionsResponse {
   repeated string target_ids = 1;
+  // Newest-first (created_at DESC). target_ids stays populated in the same
+  // order for existing consumers; entries also carries the timestamp callers
+  // need to show the latest sent reaction.
+  repeated SentReactionEntry entries = 2;
+}
+
+// One sent reaction: who it targeted and when.
+message SentReactionEntry {
+  string target_id = 1;
+  google.protobuf.Timestamp created_at = 2;
 }
 
 message GetMatchesRequest {
