@@ -148,6 +148,10 @@ service ProfileService {
   rpc GetEngagementStreak(GetEngagementStreakRequest) returns (GetEngagementStreakResponse);
   rpc ListEngagementLogs(ListEngagementLogsRequest) returns (ListEngagementLogsResponse);
 
+  // Internal only. Marks the account as having opened the app on the given
+  // local calendar day. Writes at most one row per account and day.
+  rpc RecordDailyActivity(RecordDailyActivityRequest) returns (RecordDailyActivityResponse);
+
   // Phase 2 — multi-photo avatar (D-11) + view-count counter (D-13).
   rpc ListProfilePhotos(ListProfilePhotosRequest) returns (ListProfilePhotosResponse);
   rpc UploadProfilePhoto(UploadProfilePhotoRequest) returns (ProfilePhoto);
@@ -1197,6 +1201,16 @@ message ListEngagementLogsRequest {
 message ListEngagementLogsResponse {
   repeated EngagementLogEntry logs = 1;
   int32 total = 2;
+}
+
+message RecordDailyActivityRequest {
+  string account_id = 1;
+  string activity_date = 2; // user's local date "2026-11-09"
+  string timezone = 3;      // IANA name "Asia/Ho_Chi_Minh"
+}
+
+message RecordDailyActivityResponse {
+  bool recorded = 1; // false when the day was already recorded
 }
 
 message EngagementLogEntry {
