@@ -165,6 +165,9 @@ service ProfileService {
   rpc ReleaseSurveyClaim(ReleaseSurveyClaimRequest) returns (SurveyParticipation);
   // Adds or updates pre-assigned participants (existing-user pools).
   rpc ImportSurveyParticipants(ImportSurveyParticipantsRequest) returns (ImportSurveyParticipantsResponse);
+  // Picks the accounts that are due a survey push right now, marks them as
+  // sent and returns them. Each account is returned once per kind.
+  rpc ClaimSurveyPushes(ClaimSurveyPushesRequest) returns (ClaimSurveyPushesResponse);
 
   // Phase 2 — multi-photo avatar (D-11) + view-count counter (D-13).
   rpc ListProfilePhotos(ListProfilePhotosRequest) returns (ListProfilePhotosResponse);
@@ -1661,4 +1664,24 @@ message ApplyPhotoTrialBackfillRequest {
 
 message ApplyPhotoTrialBackfillResponse {
   bool success = 1;
+}
+
+message ClaimSurveyPushesRequest {
+  string survey_id = 1;
+  string kind = 2;               // "invite" | "reminder"
+  string new_user_from_date = 3; // same meaning as in GetSurveyParticipationRequest
+  string end_date = 4;           // last local date of the survey "2026-11-30"
+  string reminder_from_date = 5; // first local date the reminder goes out "2026-11-28"
+  int32 send_hour = 6;           // local hour from which a push may go out, e.g. 7
+  string fallback_timezone = 7;  // IANA name for accounts with no known time zone
+  int32 limit = 8;               // most accounts returned by one call
+}
+
+message SurveyPushTarget {
+  string account_id = 1;
+  string segment = 2;
+}
+
+message ClaimSurveyPushesResponse {
+  repeated SurveyPushTarget targets = 1;
 }
