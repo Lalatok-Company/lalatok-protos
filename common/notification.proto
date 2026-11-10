@@ -85,6 +85,7 @@ message SendNotificationToAccountIdReq {
   map<string, string> data = 5;
   string target_type = 6;
   string target_details = 7;
+  bool push_only = 8; // true: send the push but keep it out of the in-app notification list
 }
 
 message SendNotificationToTokenReq {
