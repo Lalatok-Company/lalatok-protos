@@ -1672,9 +1672,10 @@ message ClaimSurveyPushesRequest {
   string new_user_from_date = 3; // same meaning as in GetSurveyParticipationRequest
   string end_date = 4;           // last local date of the survey "2026-11-30"
   string reminder_from_date = 5; // first local date the reminder goes out "2026-11-28"
-  int32 send_hour = 6;           // local hour from which a push may go out, e.g. 7
+  int32 send_hour = 6;           // local hour from which a push may go out, e.g. 20
   string fallback_timezone = 7;  // IANA name for accounts with no known time zone
   int32 limit = 8;               // most accounts returned by one call
+  int32 send_minute = 9;         // minute of send_hour, e.g. 30 for 20:30
 }
 
 message SurveyPushTarget {
