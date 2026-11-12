@@ -148,6 +148,27 @@ service ProfileService {
   rpc GetEngagementStreak(GetEngagementStreakRequest) returns (GetEngagementStreakResponse);
   rpc ListEngagementLogs(ListEngagementLogsRequest) returns (ListEngagementLogsResponse);
 
+  // Internal only. Marks the account as having opened the app on the given
+  // local calendar day. Writes at most one row per account and day.
+  rpc RecordDailyActivity(RecordDailyActivityRequest) returns (RecordDailyActivityResponse);
+
+  // In-app survey. Internal only: the API gateway owns the question sets and
+  // validates answers; these calls store who takes part and what they answered.
+  // Returns the account's place in the survey. A new user with no stored row
+  // is classified from the opens on the three days after sign-up and stored.
+  rpc GetSurveyParticipation(GetSurveyParticipationRequest) returns (SurveyParticipation);
+  // Stores or replaces one answer.
+  rpc SaveSurveyAnswer(SaveSurveyAnswerRequest) returns (SurveyParticipation);
+  // Marks the reward as claimed. Only the first call reports claimed_now.
+  rpc ClaimSurveyReward(ClaimSurveyRewardRequest) returns (ClaimSurveyRewardResponse);
+  // Undoes ClaimSurveyReward when the reward could not be granted.
+  rpc ReleaseSurveyClaim(ReleaseSurveyClaimRequest) returns (SurveyParticipation);
+  // Adds or updates pre-assigned participants (existing-user pools).
+  rpc ImportSurveyParticipants(ImportSurveyParticipantsRequest) returns (ImportSurveyParticipantsResponse);
+  // Picks the accounts that are due a survey push right now, marks them as
+  // sent and returns them. Each account is returned once per kind.
+  rpc ClaimSurveyPushes(ClaimSurveyPushesRequest) returns (ClaimSurveyPushesResponse);
+
   // Phase 2 — multi-photo avatar (D-11) + view-count counter (D-13).
   rpc ListProfilePhotos(ListProfilePhotosRequest) returns (ListProfilePhotosResponse);
   rpc UploadProfilePhoto(UploadProfilePhotoRequest) returns (ProfilePhoto);
@@ -1199,6 +1220,83 @@ message ListEngagementLogsResponse {
   int32 total = 2;
 }
 
+message RecordDailyActivityRequest {
+  string account_id = 1;
+  string activity_date = 2; // user's local date "2026-11-09"
+  string timezone = 3;      // IANA name "Asia/Ho_Chi_Minh"
+}
+
+message RecordDailyActivityResponse {
+  bool recorded = 1; // false when the day was already recorded
+}
+
+// ========== SURVEY ==========
+
+message SurveyAnswer {
+  string question_id = 1;
+  string option_id = 2; // empty for an open-text question
+  string text = 3;      // free text: the open answer, or the detail of an "Other" option
+}
+
+message SurveyParticipation {
+  bool eligible = 1;         // false: the survey must not be shown to this account
+  string survey_id = 2;
+  string segment = 3;        // question set: "A", "B", "C", "P1", ...
+  string behavior_label = 4; // analyst label for imported participants, else empty
+  repeated SurveyAnswer answers = 5;
+  bool claimed = 6;
+  google.protobuf.Timestamp claimed_at = 7;
+}
+
+message GetSurveyParticipationRequest {
+  string account_id = 1;
+  string survey_id = 2;
+  string local_date = 3;         // user's local date "2026-11-14"
+  string timezone = 4;           // IANA name; decides the local sign-up day
+  // First local sign-up date that counts as a new user "2026-11-10". Accounts
+  // that signed up earlier take part only when imported. Empty turns the
+  // new-user path off.
+  string new_user_from_date = 5;
+}
+
+message SaveSurveyAnswerRequest {
+  string account_id = 1;
+  string survey_id = 2;
+  SurveyAnswer answer = 3;
+}
+
+message ClaimSurveyRewardRequest {
+  string account_id = 1;
+  string survey_id = 2;
+}
+
+message ClaimSurveyRewardResponse {
+  bool claimed_now = 1; // true only for the call that made the claim
+  SurveyParticipation participation = 2;
+}
+
+message ReleaseSurveyClaimRequest {
+  string account_id = 1;
+  string survey_id = 2;
+}
+
+message SurveyParticipantImport {
+  string account_id = 1;
+  string segment = 2;
+  string behavior_label = 3;
+  string available_date = 4; // optional local date from which the survey shows
+}
+
+message ImportSurveyParticipantsRequest {
+  string survey_id = 1;
+  repeated SurveyParticipantImport participants = 2;
+}
+
+message ImportSurveyParticipantsResponse {
+  int32 imported = 1; // rows added or updated
+  int32 skipped = 2;  // rows left alone because the account already answered
+}
+
 message EngagementLogEntry {
   string id = 1;
   string account_id = 2;
@@ -1566,4 +1664,25 @@ message ApplyPhotoTrialBackfillRequest {
 
 message ApplyPhotoTrialBackfillResponse {
   bool success = 1;
+}
+
+message ClaimSurveyPushesRequest {
+  string survey_id = 1;
+  string kind = 2;               // "invite" | "reminder"
+  string new_user_from_date = 3; // same meaning as in GetSurveyParticipationRequest
+  string end_date = 4;           // last local date of the survey "2026-11-30"
+  string reminder_from_date = 5; // first local date the reminder goes out "2026-11-28"
+  int32 send_hour = 6;           // local hour from which a push may go out, e.g. 20
+  string fallback_timezone = 7;  // IANA name for accounts with no known time zone
+  int32 limit = 8;               // most accounts returned by one call
+  int32 send_minute = 9;         // minute of send_hour, e.g. 30 for 20:30
+}
+
+message SurveyPushTarget {
+  string account_id = 1;
+  string segment = 2;
+}
+
+message ClaimSurveyPushesResponse {
+  repeated SurveyPushTarget targets = 1;
 }
