@@ -21,6 +21,10 @@ service ChatService {
   rpc UnmuteChat(UnmuteChatRequest) returns (google.protobuf.Empty) {}
   rpc ChangeBackground(ChangeBackgroundRequest) returns (google.protobuf.Empty) {}
   rpc GetChatRoomByParticipants(GetChatRoomByParticipantsRequest) returns (GetChatRoomByParticipantsResponse) {}
+  // Ends the 1:1 chat of a pair after an unmatch: both participants become
+  // "left", so neither can send. Never creates a room; ended is false when the
+  // pair has no room.
+  rpc EndDirectChat(EndDirectChatRequest) returns (EndDirectChatResponse);
 
   // Message Management
   rpc SendMessage(SendMessageRequest) returns (SendMessageResponse) {}
@@ -434,4 +438,14 @@ message GetChatHistoryStatsResponse {
   string tracking_since = 4; // YYYY-MM-DD, first day with activity tracking
   int64 member_messages = 5;
   int64 persona_messages = 6;
+}
+
+message EndDirectChatRequest {
+  string account_id = 1;  // the account that unmatched
+  string target_id = 2;
+}
+
+message EndDirectChatResponse {
+  bool ended = 1;
+  string chat_room_id = 2;  // "" when the pair has no room
 }
