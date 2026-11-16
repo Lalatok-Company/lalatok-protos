@@ -258,7 +258,9 @@ message GetUnreadMessageCountRequest {
 }
 
 message GetUnreadMessageCountResponse {
-  int32 unread_count = 1;
+  int32 unread_count = 1;    // joined_unread + pending_unread
+  int32 joined_unread = 2;   // rooms the account has joined (Messages tab)
+  int32 pending_unread = 3;  // chat requests waiting for the account (Requests tab)
 }
 
 message GetChatRoomByParticipantsRequest {
