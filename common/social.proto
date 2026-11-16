@@ -102,6 +102,11 @@ service SocialService {
   // transaction. Idempotent: a repeat call deletes nothing. Callers run it after
   // the account's profile has been deleted.
   rpc PurgeAccount(PurgeAccountRequest) returns (PurgeAccountResponse);
+  // Dissolves a match: deletes the pair's match row and revokes both reactions
+  // in one transaction, so either side can react again later. Does not block.
+  // Idempotent: on a pair that is not matched it changes nothing and returns
+  // unmatched = false.
+  rpc Unmatch(UnmatchRequest) returns (UnmatchResponse);
 }
 
 // Phase 2 — reaction state for a (account_id, target_id) pair. Mirrors the
@@ -709,4 +714,13 @@ message PurgeAccountResponse {
   int64 chat_open_quotas = 9;
   int64 reaction_send_quotas = 10;
   int64 reaction_reveal_quotas = 11;
+}
+
+message UnmatchRequest {
+  string account_id = 1;
+  string target_id = 2;
+}
+
+message UnmatchResponse {
+  bool unmatched = 1;  // true iff a match row was removed by this call
 }
