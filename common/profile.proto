@@ -246,6 +246,13 @@ service AdminService {
   rpc GetAdminAccountTraits(GetAdminAccountTraitsRequest) returns (GetAdminAccountTraitsResponse);
   // Find accounts by username, AI personas included, for the admin list filters
   rpc SearchAdminAccounts(SearchAdminAccountsRequest) returns (SearchAdminAccountsResponse);
+  // Raw survey counts for the admin survey page: per segment, per answer
+  // depth and per (question, option). Question order and titles live in the
+  // gateway's survey definition.
+  rpc GetAdminSurveyStats(GetAdminSurveyStatsRequest) returns (GetAdminSurveyStatsResponse);
+  // One page of real members with gender, birth day and country, oldest
+  // signup first, for the admin CSV export.
+  rpc ListAdminUserDemographics(ListAdminUserDemographicsRequest) returns (ListAdminUserDemographicsResponse);
 }
 
 message GetAllUsersRequest {
@@ -1685,4 +1692,66 @@ message SurveyPushTarget {
 
 message ClaimSurveyPushesResponse {
   repeated SurveyPushTarget targets = 1;
+}
+
+message GetAdminSurveyStatsRequest {
+  string survey_id = 1;
+}
+
+// invited counts participants whose invite push was sent; claimed counts
+// participants whose reward was granted.
+message AdminSurveySegmentCount {
+  string segment = 1;
+  int64 participants = 2;
+  int64 invited = 3;
+  int64 claimed = 4;
+}
+
+// accounts is how many participants of the segment have exactly `answered`
+// stored answers. Participants with no answer are reported with answered = 0.
+message AdminSurveyAnswerDepth {
+  string segment = 1;
+  int32 answered = 2;
+  int64 accounts = 3;
+}
+
+// count is how many participants of the segment stored this answer; with_text
+// is how many of them also typed text. Open-text answers have option_id "".
+message AdminSurveyOptionCount {
+  string segment = 1;
+  string question_id = 2;
+  string option_id = 3;
+  int64 count = 4;
+  int64 with_text = 5;
+}
+
+message GetAdminSurveyStatsResponse {
+  repeated AdminSurveySegmentCount segments = 1;
+  repeated AdminSurveyAnswerDepth depths = 2;
+  repeated AdminSurveyOptionCount options = 3;
+}
+
+// after_account_id is the last account of the previous page ("" for the
+// first page). limit is at most 5000.
+message ListAdminUserDemographicsRequest {
+  string after_account_id = 1;
+  int32 limit = 2;
+}
+
+// gender is male, female, other or unknown. birth_day is YYYY-MM-DD or "" when
+// unknown or invalid; country is the upper-case code or "". signup_date is the
+// Vietnam day the profile was created.
+message AdminUserDemographics {
+  string account_id = 1;
+  string username = 2;
+  string gender = 3;
+  string birth_day = 4;
+  string country = 5;
+  string signup_date = 6;
+}
+
+// next_after_account_id is "" on the last page.
+message ListAdminUserDemographicsResponse {
+  repeated AdminUserDemographics users = 1;
+  string next_after_account_id = 2;
 }
