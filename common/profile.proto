@@ -254,6 +254,9 @@ service AdminService {
   // One page of real members with gender, birth day and country, oldest
   // signup first, for the admin CSV export.
   rpc ListAdminUserDemographics(ListAdminUserDemographicsRequest) returns (ListAdminUserDemographicsResponse);
+  // One page of survey answers that carry typed text (open questions and the
+  // detail of "Other"), newest first, for the admin survey page.
+  rpc ListAdminSurveyTextAnswers(ListAdminSurveyTextAnswersRequest) returns (ListAdminSurveyTextAnswersResponse);
 }
 
 message GetAllUsersRequest {
@@ -1730,6 +1733,40 @@ message GetAdminSurveyStatsResponse {
   repeated AdminSurveySegmentCount segments = 1;
   repeated AdminSurveyAnswerDepth depths = 2;
   repeated AdminSurveyOptionCount options = 3;
+}
+
+// question_id, segment and search are optional filters; search matches the
+// text case-insensitively. cursor is next_cursor of the previous page ("" for
+// the first page). limit defaults to 100 and is at most 500.
+message ListAdminSurveyTextAnswersRequest {
+  string survey_id = 1;
+  string question_id = 2;
+  string segment = 3;
+  string search = 4;
+  string cursor = 5;
+  int32 limit = 6;
+}
+
+// option_id is "" for an open-text question, otherwise the option the text
+// details (usually "other"). answered_at is when the answer was last saved.
+message AdminSurveyTextAnswer {
+  string account_id = 1;
+  string username = 2;
+  string segment = 3;
+  string question_id = 4;
+  string option_id = 5;
+  string text = 6;
+  google.protobuf.Timestamp answered_at = 7;
+  string country = 8;
+  bool is_test_account = 9;
+}
+
+// total counts every answer matching the filters; next_cursor is "" on the
+// last page.
+message ListAdminSurveyTextAnswersResponse {
+  repeated AdminSurveyTextAnswer answers = 1;
+  string next_cursor = 2;
+  int64 total = 3;
 }
 
 // after_account_id is the last account of the previous page ("" for the
